@@ -6,6 +6,7 @@
 package SOSCalendar;
 
 import java.io.Serializable;
+import java.util.Date;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -17,6 +18,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -37,6 +40,16 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Dates.findByFechaComienzo", query = "SELECT d FROM Dates d WHERE d.fechaComienzo = :fechaComienzo"),
     @NamedQuery(name = "Dates.findByFechaFinalizado", query = "SELECT d FROM Dates d WHERE d.fechaFinalizado = :fechaFinalizado")})
 public class Dates implements Serializable {
+    @Basic(optional = false)
+    @NotNull
+    @Column(name = "fecha_comienzo")
+    @Temporal(TemporalType.DATE)
+    private Date fechaComienzo;
+    @Basic(optional = false)
+    @NotNull
+    @Column(name = "fecha_finalizado")
+    @Temporal(TemporalType.DATE)
+    private Date fechaFinalizado;
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -58,14 +71,6 @@ public class Dates implements Serializable {
     @Size(min = 1, max = 30)
     @Column(name = "lugar")
     private String lugar;
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "fecha_comienzo")
-    private int fechaComienzo;
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "fecha_finalizado")
-    private int fechaFinalizado;
     @JoinColumn(name = "calendar_id", referencedColumnName = "calendar_id")
     @ManyToOne(optional = false)
     private Calendars calendarId;
@@ -77,7 +82,7 @@ public class Dates implements Serializable {
 	this.dateId = dateId;
     }
 
-    public Dates(Integer dateId, String name, String description, String lugar, int fechaComienzo, int fechaFinalizado) {
+    public Dates(Integer dateId, String name, String description, String lugar, Date fechaComienzo, Date fechaFinalizado) {
 	this.dateId = dateId;
 	this.name = name;
 	this.description = description;
@@ -118,22 +123,6 @@ public class Dates implements Serializable {
 	this.lugar = lugar;
     }
 
-    public int getFechaComienzo() {
-	return fechaComienzo;
-    }
-
-    public void setFechaComienzo(int fechaComienzo) {
-	this.fechaComienzo = fechaComienzo;
-    }
-
-    public int getFechaFinalizado() {
-	return fechaFinalizado;
-    }
-
-    public void setFechaFinalizado(int fechaFinalizado) {
-	this.fechaFinalizado = fechaFinalizado;
-    }
-
     public Calendars getCalendarId() {
 	return calendarId;
     }
@@ -165,6 +154,22 @@ public class Dates implements Serializable {
     @Override
     public String toString() {
 	return "SOSCalendar.Dates[ dateId=" + dateId + " ]";
+    }
+
+    public Date getFechaComienzo() {
+        return fechaComienzo;
+    }
+
+    public void setFechaComienzo(Date fechaComienzo) {
+        this.fechaComienzo = fechaComienzo;
+    }
+
+    public Date getFechaFinalizado() {
+        return fechaFinalizado;
+    }
+
+    public void setFechaFinalizado(Date fechaFinalizado) {
+        this.fechaFinalizado = fechaFinalizado;
     }
     
 }

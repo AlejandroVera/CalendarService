@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package service;
 
 import SOSCalendar.Dates;
@@ -21,7 +20,7 @@ import javax.ws.rs.Produces;
 
 /**
  *
- * @author xafilox
+ * @author borja
  */
 @Stateless
 @Path("soscalendar.dates")
@@ -30,60 +29,60 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
     private EntityManager em;
 
     public DatesFacadeREST() {
-	super(Dates.class);
+        super(Dates.class);
     }
 
     @POST
     @Override
     @Consumes({"application/xml", "application/json"})
     public void create(Dates entity) {
-	super.create(entity);
+        super.create(entity);
     }
 
     @PUT
     @Override
     @Consumes({"application/xml", "application/json"})
     public void edit(Dates entity) {
-	super.edit(entity);
+        super.edit(entity);
     }
 
     @DELETE
     @Path("{id}")
     public void remove(@PathParam("id") Integer id) {
-	super.remove(super.find(id));
+        super.remove(super.find(id));
     }
 
     @GET
     @Path("{id}")
     @Produces({"application/xml", "application/json"})
     public Dates find(@PathParam("id") Integer id) {
-	return super.find(id);
+        return super.find(id);
     }
 
     @GET
     @Override
     @Produces({"application/xml", "application/json"})
     public List<Dates> findAll() {
-	return super.findAll();
+        return super.findAll();
     }
 
     @GET
     @Path("{from}/{to}")
     @Produces({"application/xml", "application/json"})
     public List<Dates> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
-	return super.findRange(new int[]{from, to});
+        return super.findRange(new int[]{from, to});
     }
 
     @GET
     @Path("count")
     @Produces("text/plain")
     public String countREST() {
-	return String.valueOf(super.count());
+        return String.valueOf(super.count());
     }
 
     @Override
     protected EntityManager getEntityManager() {
-	return em;
+        return em;
     }
     
 }
