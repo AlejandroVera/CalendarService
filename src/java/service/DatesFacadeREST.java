@@ -6,6 +6,8 @@ package service;
 
 import SOSCalendar.Calendars;
 import SOSCalendar.Dates;
+import SOSCalendar.Users;
+import com.sun.xml.rpc.processor.modeler.j2ee.xml.messageDestinationLinkType;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -29,6 +31,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
 
 
 @Stateless
@@ -52,8 +56,9 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 	//Comprobamos que el calendario exista
 	checkCalendar(id_calen);
 	
-	
         super.create(entity);
+	
+	System.out.println("ID creado:"+entity.getDateId());
     }
 
     @PUT
@@ -67,7 +72,6 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 	//Comprobamos y obtenemos la cita
 	checkDate(id_date);
 	
-	//TODO: buscar conflictos
         super.edit(entity);
     }
 
@@ -88,7 +92,7 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
     @GET
     @Path("{id_usu}/calendars/{id_calen}/dates")
     @Produces({"application/xml", "application/json"})
-    public List<Dates> findAll(@PathParam("id_usu") Integer id_usu,
+    public Response findDatesOfCalendar(@PathParam("id_usu") Integer id_usu,
 			@PathParam("id_calen") Integer id_calen,
 			@QueryParam("max") @DefaultValue("-1") int max,
 			@QueryParam("from_date") @DefaultValue("") String from_date_str,
@@ -135,15 +139,66 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 	    query.setMaxResults(max);
 	
 	List<Dates> dates = query.getResultList();
-
-	return dates;
+	if(dates.size() > 0){
+	    Dates []d = new Dates[dates.size()];
+	    return Response.ok((Dates[])dates.toArray(d)).build();
+	}else
+	    return Response.noContent().build();
 	
     }
     
     @GET
+    @Path("{id_usu}/dates/")
     @Produces({"application/xml", "application/json"})
-    public List<Dates> find() {
-        return super.findAll();
+    public Response findDates(@PathParam("id_usu") Integer id_usu,
+			@QueryParam("max") @DefaultValue("-1") int max,
+			@QueryParam("from_date") @DefaultValue("") String from_date_str,
+			@QueryParam("to_date") @DefaultValue("") String to_date_str) {
+	
+	//Primero, comprobamos que el usuario exista
+	checkUser(id_usu);
+	
+	
+	//Obtenemos los parámetros de filtrado
+	Date from_date = null;
+	Date to_date = null;
+	DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+	try {
+	    from_date = df.parse(from_date_str);
+	} catch (ParseException e) {}
+	try {
+	    to_date = df.parse(to_date_str);
+	} catch (ParseException e) {}
+
+
+	String querytxt = "SELECT d FROM Dates d JOIN d.calendarId c WHERE c.userId = :usu ";
+	
+	//Aplicamos los filtros de fecha
+	if(from_date != null && to_date != null){
+	    querytxt += "AND ((d.fechaComienzo >= :from AND d.fechaComienzo <= :to) "
+		   + "OR (d.fechaFinalizado >= :from AND d.fechaFinalizado <= :to))";
+	}else if(from_date != null){
+	    querytxt += "AND (d.fechaComienzo >= :from OR d.fechaFinalizado >= :from)";
+	}else if(to_date != null){
+	    querytxt += "AND (d.fechaComienzo <= :to OR d.fechaFinalizado <= :to)";
+	}
+	Query query = em.createQuery(querytxt).setParameter("usu", new Users(id_usu));
+	if(from_date != null)
+	    query.setParameter("from", from_date);
+	if(to_date != null)
+	    query.setParameter("to", to_date);
+	
+	//Aplicamos el filtro de maximo devuelto
+	if(max > 0)
+	    query.setMaxResults(max);
+	
+	List<Dates> dates = query.getResultList();
+	if(dates.size() > 0){
+	    Dates []d = new Dates[dates.size()];
+	    return Response.ok((Dates[])dates.toArray(d)).build();
+	}else
+	    return Response.noContent().build();
+	
     }
 
     @GET
@@ -168,7 +223,7 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
     private void checkUser(int id) {
         try {
             Query q = getEntityManager().createQuery("SELECT e FROM Users e where e.userId = :user_id");
-	    q.setParameter("user_id", (Integer)id).getSingleResult();
+	    Object u = q.setParameter("user_id", id).getSingleResult();
         } catch (NoResultException ex) {
             throw new WebApplicationException(new Throwable("User not found"), 404);
 	}
@@ -185,7 +240,7 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
     private void checkCalendar(int id){
 	try {
             Query q = getEntityManager().createQuery("SELECT e FROM Calendars e where e.calendarId = :calendar_id");
-	    q.setParameter("calendar_id", (Integer)id).getSingleResult();
+	    q.setParameter("calendar_id", id).getSingleResult();
         } catch (NoResultException ex) {
             throw new WebApplicationException(new Throwable("Calendar not found"), 404);
 	}
