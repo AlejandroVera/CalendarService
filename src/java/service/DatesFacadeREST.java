@@ -4,27 +4,33 @@
  */
 package service;
 
+import SOSCalendar.Calendars;
 import SOSCalendar.Dates;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 
 
-/**
- *
- * @author borja
- */
 @Stateless
 @Path("")
 public class DatesFacadeREST extends AbstractFacade<Dates> {
@@ -36,9 +42,17 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
     }
 
     @POST
-    @Override
     @Consumes({"application/xml", "application/json"})
-    public void create(Dates entity) {
+    @Path("{id_usu}/calendars/{id_calen}/dates")
+    public void create(Dates entity, @PathParam("id_usu") Integer id_usu, @PathParam("id_calen") Integer id_calen) {
+	
+	//Primero, comprobamos que el usuario exista
+	checkUser(id_usu);
+	
+	//Comprobamos que el calendario exista
+	checkCalendar(id_calen);
+	
+	
         super.create(entity);
     }
 
@@ -74,28 +88,61 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
     @GET
     @Path("{id_usu}/calendars/{id_calen}/dates")
     @Produces({"application/xml", "application/json"})
-    public Dates find(@PathParam("id_usu") Integer id_usu, @PathParam("id_calen") Integer id_calen) {
-        
+    public List<Dates> findAll(@PathParam("id_usu") Integer id_usu,
+			@PathParam("id_calen") Integer id_calen,
+			@QueryParam("max") @DefaultValue("-1") int max,
+			@QueryParam("from_date") @DefaultValue("") String from_date_str,
+			@QueryParam("to_date") @DefaultValue("") String to_date_str) {
+	
 	//Primero, comprobamos que el usuario exista
 	checkUser(id_usu);
 	
-	//TODO
-	return super.find(1);
+	//Comprobamos que el calendario exista
+	checkCalendar(id_calen);
 	
+	//Obtenemos los parámetros de filtrado
+	Date from_date = null;
+	Date to_date = null;
+	DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+	try {
+	    from_date = df.parse(from_date_str);
+	} catch (ParseException e) {}
+	try {
+	    to_date = df.parse(to_date_str);
+	} catch (ParseException e) {}
+
+
+	Calendars cal = new Calendars(id_calen);
+	String querytxt = "SELECT d FROM Dates d WHERE d.calendarId = :cal ";
 	
+	//Aplicamos los filtros de fecha
+	if(from_date != null && to_date != null){
+	    querytxt += "AND ((d.fechaComienzo >= :from AND d.fechaComienzo <= :to) "
+		   + "OR (d.fechaFinalizado >= :from AND d.fechaFinalizado <= :to))";
+	}else if(from_date != null){
+	    querytxt += "AND (d.fechaComienzo >= :from OR d.fechaFinalizado >= :from)";
+	}else if(to_date != null){
+	    querytxt += "AND (d.fechaComienzo <= :to OR d.fechaFinalizado <= :to)";
+	}
+	Query query = em.createQuery(querytxt).setParameter("cal", cal);
+	if(from_date != null)
+	    query.setParameter("from", from_date);
+	if(to_date != null)
+	    query.setParameter("to", to_date);
 	
-	/*protected Customer getEntity() {
-        try {
-            return (Customer) em.createQuery("SELECT e FROM Customer e where e.customerId = :customerId").setParameter("customerId", id).getSingleResult();
-        } catch (NoResultException ex) {
-            throw new WebApplicationException(new Throwable("Resource for " + uriInfo.getAbsolutePath() + " does not exist."), 404);
-        }*/
+	//Aplicamos el filtro de maximo devuelto
+	if(max > 0)
+	    query.setMaxResults(max);
+	
+	List<Dates> dates = query.getResultList();
+
+	return dates;
+	
     }
     
     @GET
-    @Override
     @Produces({"application/xml", "application/json"})
-    public List<Dates> findAll() {
+    public List<Dates> find() {
         return super.findAll();
     }
 
@@ -120,7 +167,8 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 
     private void checkUser(int id) {
         try {
-            em.createQuery("SELECT e FROM Users e where e.user_id = :user_id").setParameter("user_id", id).getSingleResult();
+            Query q = getEntityManager().createQuery("SELECT e FROM Users e where e.userId = :user_id");
+	    q.setParameter("user_id", (Integer)id).getSingleResult();
         } catch (NoResultException ex) {
             throw new WebApplicationException(new Throwable("User not found"), 404);
 	}
@@ -132,5 +180,14 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 	if(date == null)
 	    throw new WebApplicationException(new Throwable("Date not found"), 404);
 	return date;
+    }
+    
+    private void checkCalendar(int id){
+	try {
+            Query q = getEntityManager().createQuery("SELECT e FROM Calendars e where e.calendarId = :calendar_id");
+	    q.setParameter("calendar_id", (Integer)id).getSingleResult();
+        } catch (NoResultException ex) {
+            throw new WebApplicationException(new Throwable("Calendar not found"), 404);
+	}
     }
 }
