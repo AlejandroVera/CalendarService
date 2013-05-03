@@ -5,6 +5,7 @@
 package service;
 
 import SOSCalendar.Calendars;
+import SOSCalendar.Users;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
