@@ -117,7 +117,7 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 
 
 	Calendars cal = new Calendars(id_calen);
-	String querytxt = "SELECT d FROM Dates d WHERE d.calendarId = :cal ";
+	String querytxt = "SELECT d FROM Dates d WHERE d.calendarId = :cal JOIN d.calendarId c WHERE c.userId = :usu ";
 	
 	//Aplicamos los filtros de fecha
 	if(from_date != null && to_date != null){
@@ -128,7 +128,9 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 	}else if(to_date != null){
 	    querytxt += "AND (d.fechaComienzo <= :to OR d.fechaFinalizado <= :to)";
 	}
-	Query query = em.createQuery(querytxt).setParameter("cal", cal);
+	Query query = em.createQuery(querytxt);
+	query.setParameter("cal", cal);
+	query.setParameter("usu", new Users(id_usu));
 	if(from_date != null)
 	    query.setParameter("from", from_date);
 	if(to_date != null)
@@ -209,10 +211,44 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
     }
 
     @GET
-    @Path("count")
+    @Path("{id_usu}/datescount")
     @Produces("text/plain")
-    public String countREST() {
-        return String.valueOf(super.count());
+    public String datescount(@PathParam("id_usu") Integer id_usu,
+			    @QueryParam("period") @DefaultValue("") String period) {
+	
+	checkUser(id_usu);
+	
+	String type = null;
+	String querytxt = "SELECT d FROM Dates d JOIN d.calendarId c WHERE c.userId = :usu ";
+	Calendar cal = new GregorianCalendar();
+	cal.set(Calendar.HOUR, 0);
+	cal.set(Calendar.MINUTE, 0);
+	cal.set(Calendar.SECOND, 0);
+	cal.set(Calendar.MILLISECOND, 0);
+	
+	if(period.equals("day")){
+	    type = "DAY";
+	}else if(period.equals("week")){
+	    cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+	    type = "WEEK";
+	}else if(period.equals("month")){
+	    cal.set(Calendar.DAY_OF_MONTH, 1);
+	    type = "MONTH";
+	}else if(period.equals("year")){
+	    cal.set(Calendar.DAY_OF_MONTH, 1);
+	    cal.set(Calendar.MONTH, 1);
+	    type = "YEAR";
+	}
+	
+	Query q = em.createQuery(querytxt);
+	q.setParameter("usu", new Users(id_usu));
+	if(type != null){
+	    querytxt += " AND d.fechaComienzo BETWEEN :fecha AND :fecha + INTERVAL 1 "+type;
+	    q.setParameter("fecha", cal.getTime());
+	}
+	return ""+q.getResultList().size();
+	
+	
     }
 
     @Override
