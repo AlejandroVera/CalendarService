@@ -247,8 +247,7 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 	    q.setParameter("fecha", cal.getTime());
 	}
 	return ""+q.getResultList().size();
-	
-	
+
     }
 
     @Override
