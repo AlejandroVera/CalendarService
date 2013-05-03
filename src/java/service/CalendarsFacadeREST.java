@@ -22,6 +22,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
 
 /**
  *
@@ -107,35 +108,36 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
     @GET
     @Path("{id_usu}/calendars/{calendar_id}")
     @Produces({"application/xml", "application/json"})
-    public Calendars find(@PathParam("calendar_id") Integer calendar_id,
+    public Response find(@PathParam("calendar_id") Integer calendar_id,
             @PathParam("id_usu") Integer id_usu) {
         //Se comprueba la existencia del usuario
         this.checkUser(id_usu);
 
         /*Comprobamos que existe y obtenemos el calendario*/
         Calendars calendar = this.checkCalendar(calendar_id);
-        
-        return calendar;
-        /*List<Calendars> calendars;
-
-        String querytxt = "SELECT d FROM dates d WHERE d.calendar_id = " + calendar_id;
+        return Response.ok(calendar).build();
+     
+        /*String querytxt = "SELECT d FROM dates d WHERE d.calendar_id = " + calendar_id;
         Query query = em.createQuery(querytxt);
-        List<Calendars> calendars = query.getResultList();
-        return calendars;*/
+        List<Object> calendars = query.getResultList();*/                    
 
     }
 
     @GET
     @Path("{id_usu}/calendars")
     @Produces({"application/xml", "application/json"})
-    public List<Calendars> findAll(@PathParam("id_usu") Integer id_usu) {
+    public Response findAll(@PathParam("id_usu") Integer id_usu) {
         //Primero, comprobamos que el usuario exista
         checkUser(id_usu);
 
         String querytxt = "SELECT c FROM calendars c WHERE c.user_id = " + id_usu;
         Query query = em.createQuery(querytxt);
         List<Calendars> calendars = query.getResultList();
-        return calendars;
+        
+        if (calendars.isEmpty())
+            return Response.noContent().build();
+        else
+            return Response.ok((Calendars [])calendars.toArray()).build();
 
 
     }
