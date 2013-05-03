@@ -30,6 +30,7 @@ import javax.ws.rs.WebApplicationException;
 @Stateless
 @Path("")
 public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
+
     @PersistenceContext(unitName = "SOSCalendarPU")
     private EntityManager em;
 
@@ -43,40 +44,91 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
     public void create(Calendars entity) {
         super.create(entity);
     }
+    
+    @POST    
+    @Consumes({"{id_usu}/calendars"})
+    public void create(Calendars entity,
+            @PathParam("id_usu") Integer id_usu) {
 
-    @PUT
-    @Override
-    @Consumes({"application/xml", "application/json"})
-    public void edit(Calendars entity) {
+        //Primero, comprobamos que el usuario exista
+        checkUser(id_usu);
+
+        //Ahora vamos a buscar conflictos
+        String name = entity.getName();
+
+        String querytxt = "SELECT c FROM calendars c WHERE c.name = " + name;
+        Query query = em.createQuery(querytxt);
+        if (!query.getResultList().isEmpty()) {
+            throw new WebApplicationException(new Throwable("Conflict: "
+                    + "There is already a calendar with this name"), 409);
+        }
+        
+        super.create(entity);
+    }
+
+    @PUT    
+    @Consumes({"{id_usu}/calendars/{calendar_id}"})
+    public void edit(Calendars entity,
+            @PathParam("id_usu") Integer id_usu, @PathParam("calendar_id") Integer calendar_id) {
+
+        //Primero, comprobamos que el usuario exista
+        checkUser(id_usu);
+
+        //Comprobamos y obtenemos el calendario
+        checkCalendar(calendar_id);
+
+        //Ahora vamos a buscar conflictos
+        String name = entity.getName();
+
+        String querytxt = "SELECT c FROM calendars c WHERE c.name = " + name;
+        Query query = em.createQuery(querytxt);
+        if (!query.getResultList().isEmpty()) {
+            throw new WebApplicationException(new Throwable("Conflict: "
+                    + "There is already a calendar with this name"), 409);
+        }
+        
         super.edit(entity);
     }
 
     @DELETE
-    @Path("{id}")
-    public void remove(@PathParam("id") Integer id) {
-        super.remove(super.find(id));
+    @Path("{id_usu}/calendars/{calendar_id}")
+    public void remove(@PathParam("calendar_id") Integer id,
+            @PathParam("id_usu") Integer id_usu) {
+        //Comprobamos que existe el usuario
+        this.checkUser(id_usu);
+
+        //Comprobamos que existe el calendario y lo obtenemos
+        Calendars calendar = this.checkCalendar(id);
+
+        //Lo borramos
+        super.remove(calendar);
     }
 
+    /*@GET
+     @Path("{id_usu}/calendars/{calendar_id}")
+     @Produces({"application/xml", "application/json"})
+     public Calendars find(@PathParam("calendar_id") Integer calendar_id,
+     @PathParam("id_usu") Integer id_usu) {
+     //Se comprueba la existencia del usuario
+     this.checkUser(id_usu);
+        
+     Calendars calendar =  super.find(calendar_id);
+        
+        
+     }*/
     @GET
-    @Path("{id_usu}/calendars/")
-    @Produces({"application/xml", "application/json"})
-    public Calendars find(@PathParam("id") Integer id) {
-        return super.find(id);
-    }
-
-    @GET    
     @Path("{id_usu}/calendars")
     @Produces({"application/xml", "application/json"})
     public List<Calendars> findAll(@PathParam("id_usu") Integer id_usu) {
         //Primero, comprobamos que el usuario exista
         checkUser(id_usu);
-        
-        String querytxt = "SELECT calendar_id FROM calendars c WHERE c.user_id = " + id_usu;
+
+        String querytxt = "SELECT c FROM calendars c WHERE c.user_id = " + id_usu;
         Query query = em.createQuery(querytxt);
-        List <Calendars> calendars = query.getResultList();
+        List<Calendars> calendars = query.getResultList();
         return calendars;
-        
-        
+
+
     }
 
     @GET
@@ -97,20 +149,21 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
     protected EntityManager getEntityManager() {
         return em;
     }
-    
-        private void checkUser(int id) {
+
+    private void checkUser(int id) {
         try {
             em.createQuery("SELECT e FROM Users e where e.user_id = :user_id").setParameter("user_id", id).getSingleResult();
         } catch (NoResultException ex) {
             throw new WebApplicationException(new Throwable("User not found"), 404);
-	}
-    
+        }
+
     }
-    
-    private Calendars checkCalendar(int id){
-	Calendars cal = super.find(id);
-	if(cal == null)
-	    throw new WebApplicationException(new Throwable("Calendar not found"), 404);
-	return cal;
+
+    private Calendars checkCalendar(int id) {
+        Calendars cal = super.find(id);
+        if (cal == null) {
+            throw new WebApplicationException(new Throwable("Calendar not found"), 404);
+        }
+        return cal;
     }
 }
