@@ -44,8 +44,8 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
     public void create(Calendars entity) {
         super.create(entity);
     }
-    
-    @POST    
+
+    @POST
     @Consumes({"{id_usu}/calendars"})
     public void create(Calendars entity,
             @PathParam("id_usu") Integer id_usu) {
@@ -62,11 +62,11 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
             throw new WebApplicationException(new Throwable("Conflict: "
                     + "There is already a calendar with this name"), 409);
         }
-        
+
         super.create(entity);
     }
 
-    @PUT    
+    @PUT
     @Consumes({"{id_usu}/calendars/{calendar_id}"})
     public void edit(Calendars entity,
             @PathParam("id_usu") Integer id_usu, @PathParam("calendar_id") Integer calendar_id) {
@@ -86,7 +86,7 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
             throw new WebApplicationException(new Throwable("Conflict: "
                     + "There is already a calendar with this name"), 409);
         }
-        
+
         super.edit(entity);
     }
 
@@ -104,18 +104,27 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
         super.remove(calendar);
     }
 
-    /*@GET
-     @Path("{id_usu}/calendars/{calendar_id}")
-     @Produces({"application/xml", "application/json"})
-     public Calendars find(@PathParam("calendar_id") Integer calendar_id,
-     @PathParam("id_usu") Integer id_usu) {
-     //Se comprueba la existencia del usuario
-     this.checkUser(id_usu);
+    @GET
+    @Path("{id_usu}/calendars/{calendar_id}")
+    @Produces({"application/xml", "application/json"})
+    public Calendars find(@PathParam("calendar_id") Integer calendar_id,
+            @PathParam("id_usu") Integer id_usu) {
+        //Se comprueba la existencia del usuario
+        this.checkUser(id_usu);
+
+        /*Comprobamos que existe y obtenemos el calendario*/
+        Calendars calendar = this.checkCalendar(calendar_id);
         
-     Calendars calendar =  super.find(calendar_id);
-        
-        
-     }*/
+        return calendar;
+        /*List<Calendars> calendars;
+
+        String querytxt = "SELECT d FROM dates d WHERE d.calendar_id = " + calendar_id;
+        Query query = em.createQuery(querytxt);
+        List<Calendars> calendars = query.getResultList();
+        return calendars;*/
+
+    }
+
     @GET
     @Path("{id_usu}/calendars")
     @Produces({"application/xml", "application/json"})
