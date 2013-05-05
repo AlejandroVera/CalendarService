@@ -178,7 +178,8 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 	//Aplicamos los filtros de fecha
 	if(from_date != null && to_date != null){
 	    querytxt += "AND ((d.fechaComienzo >= :from AND d.fechaComienzo <= :to) "
-		   + "OR (d.fechaFinalizado >= :from AND d.fechaFinalizado <= :to))";
+		   + "OR (d.fechaFinalizado >= :from AND d.fechaFinalizado <= :to)"
+		   + "OR (d.fechaComienzo <= :from AND d.fechaFinalizado >= :to))";
 	}else if(from_date != null){
 	    querytxt += "AND (d.fechaComienzo >= :from OR d.fechaFinalizado >= :from)";
 	}else if(to_date != null){
@@ -243,7 +244,9 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 	Query q = em.createQuery(querytxt);
 	q.setParameter("usu", new Users(id_usu));
 	if(type != null){
-	    querytxt += " AND d.fechaComienzo BETWEEN :fecha AND :fecha + INTERVAL 1 "+type;
+	    querytxt += " AND ((d.fechaComienzo BETWEEN :fecha AND :fecha + INTERVAL 1 "+type
+		    + ") OR (d.fechaFinalizado BETWEEN :fecha AND :fecha + INTERVAL 1 "+type+")"
+		    + " OR (d.fechaComienzo <= :fecha AND :fecha + INTERVAL 1 "+type+" >= d.fechaFinalizado))";
 	    q.setParameter("fecha", cal.getTime());
 	}
 	return ""+q.getResultList().size();
