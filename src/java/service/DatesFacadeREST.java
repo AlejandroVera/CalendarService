@@ -202,6 +202,20 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 	    return Response.noContent().build();
 	
     }
+    
+    @GET
+    @Path("dates/{id_usu}/{id_date}")
+    public Dates find(@PathParam("id_usu") Integer id_usu, @PathParam("id_date") Integer id_date) {
+	
+	//Primero, comprobamos que el usuario exista
+	checkUser(id_usu);
+	
+	//Comprobamos y obtenemos la cita
+	Dates date = checkDate(id_date);
+	
+	//La borramos
+        return date;
+    }
 
     /*
     @GET
