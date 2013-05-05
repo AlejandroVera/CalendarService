@@ -142,7 +142,7 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 	List<Dates> dates = query.getResultList();
 	if(dates.size() > 0){
 	    Dates []d = new Dates[dates.size()];
-	    return Response.ok((Dates[])dates.toArray(d)).build();
+	    return Response.ok(datesToUriListString(dates.toArray(d), id_usu)).build();
 	}else
 	    return Response.noContent().build();
 	
@@ -197,7 +197,7 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 	List<Dates> dates = query.getResultList();
 	if(dates.size() > 0){
 	    Dates []d = new Dates[dates.size()];
-	    return Response.ok((Dates[])dates.toArray(d)).build();
+	    return Response.ok(datesToUriListString(dates.toArray(d), id_usu)).build();
 	}else
 	    return Response.noContent().build();
 	
@@ -308,5 +308,16 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
         } catch (NoResultException ex) {
             throw new WebApplicationException(new Throwable("Calendar not found"), 404);
 	}
+    }
+    
+    private String datesToUriListString(Dates[] dates, Integer user){
+	String ret = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><dates>";
+	for(Dates date : dates){
+	    ret += "<date>"+date.toUri(user.toString())+"</date>";
+	}
+	
+	ret += "</dates>";
+	
+	return ret;
     }
 }
