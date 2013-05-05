@@ -47,7 +47,7 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 
     @POST
     @Consumes({"application/xml", "application/json"})
-    @Path("{id_usu}/calendars/{id_calen}/dates")
+    @Path("calendars/{id_usu}/{id_calen}/dates")
     public void create(Dates entity, @PathParam("id_usu") Integer id_usu, @PathParam("id_calen") Integer id_calen) {
 	
 	//Primero, comprobamos que el usuario exista
@@ -63,7 +63,7 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 
     @PUT
     @Consumes({"application/xml", "application/json"})
-    @Path("{id_usu}/dates/{id_date}")
+    @Path("dates/{id_usu}/{id_date}")
     public void edit(Dates entity, @PathParam("id_usu") Integer id_usu, @PathParam("id_date") Integer id_date) {
 	
 	//Primero, comprobamos que el usuario exista
@@ -76,7 +76,7 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
     }
 
     @DELETE
-    @Path("{id_usu}/dates/{id_date}")
+    @Path("dates/{id_usu}/{id_date}")
     public void remove(@PathParam("id_usu") Integer id_usu, @PathParam("id_date") Integer id_date) {
 	
 	//Primero, comprobamos que el usuario exista
@@ -90,7 +90,7 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
     }
 
     @GET
-    @Path("{id_usu}/calendars/{id_calen}/dates")
+    @Path("calendars/{id_usu}/{id_calen}/dates")
     @Produces({"application/xml", "application/json"})
     public Response findDatesOfCalendar(@PathParam("id_usu") Integer id_usu,
 			@PathParam("id_calen") Integer id_calen,
@@ -150,7 +150,7 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
     }
     
     @GET
-    @Path("{id_usu}/dates/")
+    @Path("dates/{id_usu}/")
     @Produces({"application/xml", "application/json"})
     public Response findDates(@PathParam("id_usu") Integer id_usu,
 			@QueryParam("max") @DefaultValue("-1") int max,
@@ -204,15 +204,17 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 	
     }
 
+    /*
     @GET
     @Path("{from}/{to}")
     @Produces({"application/xml", "application/json"})
     public List<Dates> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
         return super.findRange(new int[]{from, to});
     }
+    * */
 
     @GET
-    @Path("{id_usu}/datescount")
+    @Path("datescount/{id_usu}")
     @Produces("text/plain")
     public String datescount(@PathParam("id_usu") Integer id_usu,
 			    @QueryParam("period") @DefaultValue("") String period) {
@@ -227,6 +229,7 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 	cal.set(Calendar.SECOND, 0);
 	cal.set(Calendar.MILLISECOND, 0);
 	
+	period = period.toLowerCase();
 	if(period.equals("day")){
 	    type = "DAY";
 	}else if(period.equals("week")){
