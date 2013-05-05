@@ -23,7 +23,7 @@ import javax.ws.rs.Produces;
  * @author borja
  */
 @Stateless
-@Path("soscalendar.users")
+@Path("users")
 public class UsersFacadeREST extends AbstractFacade<Users> {
     @PersistenceContext(unitName = "SOSCalendarPU")
     private EntityManager em;

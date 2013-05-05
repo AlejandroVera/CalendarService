@@ -29,7 +29,7 @@ import javax.ws.rs.core.Response;
  * @author borja
  */
 @Stateless
-@Path("a")
+@Path("calendars")
 public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
 
     @PersistenceContext(unitName = "SOSCalendarPU")
@@ -40,14 +40,7 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
     }
 
     @POST
-    @Override
-    @Consumes({"application/xml", "application/json"})
-    public void create(Calendars entity) {
-        super.create(entity);
-    }
-
-    @POST
-    @Path("{id_usu}/calendars")
+    @Path("{id_usu}")
     public void create(Calendars entity,
             @PathParam("id_usu") Integer id_usu) {
 
@@ -57,8 +50,9 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
         //Ahora vamos a buscar conflictos
         String name = entity.getName();
 
-        String querytxt = "SELECT c FROM calendars c WHERE c.name = " + name;
+        String querytxt = "SELECT c FROM Calendars c WHERE c.name = :calName";
         Query query = em.createQuery(querytxt);
+        query.setParameter("calName", entity);
         if (!query.getResultList().isEmpty()) {
             throw new WebApplicationException(new Throwable("Conflict: "
                     + "There is already a calendar with this name"), 409);
@@ -67,22 +61,44 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
         super.create(entity);
     }
 
+    @GET
+    @Path("{id_usu}/{id_calen}")
+    @Produces({"application/xml", "application/json"})
+    public Response find(@PathParam("id_usu") Integer id_usu,
+            @PathParam("id_calen") Integer id_calen) {
+        //Se comprueba la existencia del usuario
+        this.checkUser(id_usu);
+
+        /*Comprobamos que existe y obtenemos el calendario*/
+        Calendars calendar = this.checkCalendar(id_calen);
+       
+        /*Obtenemos los dates para hacer el composite*/
+        String querytxt = "SELECT d FROM Dates d WHERE d.calendarId = :calId " ;
+        Query query = em.createQuery(querytxt);
+        query.setParameter("calId", calendar);
+        
+        List <Dates> dates = query.getResultList();
+        Dates [] d = new Dates [dates.size()];
+        
+        String resultado = this.datesToUriListString(dates.toArray(d), id_usu, calendar);
+        
+        return Response.ok(resultado).build();
+    }
+
     @PUT
-    @Path("{id_usu}/calendars/{calendar_id}")
+    @Path("{id_usu}/{id_calen}")
     public void edit(Calendars entity,
-            @PathParam("id_usu") Integer id_usu, @PathParam("calendar_id") Integer calendar_id) {
+            @PathParam("id_usu") Integer id_usu, @PathParam("id_calen") Integer id_calen) {
 
         //Primero, comprobamos que el usuario exista
         checkUser(id_usu);
 
         //Comprobamos y obtenemos el calendario
-        checkCalendar(calendar_id);
+        checkCalendar(id_calen);
 
-        //Ahora vamos a buscar conflictos
-        String name = entity.getName();
-
-        String querytxt = "SELECT c FROM calendars c WHERE c.name = " + name;
+        String querytxt = "SELECT c FROM Calendars c WHERE c.name = :calName";
         Query query = em.createQuery(querytxt);
+        query.setParameter("calName", entity);
         if (!query.getResultList().isEmpty()) {
             throw new WebApplicationException(new Throwable("Conflict: "
                     + "There is already a calendar with this name"), 409);
@@ -92,9 +108,9 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
     }
 
     @DELETE
-    @Path("{id_usu}/calendars/{calendar_id}")
-    public void remove(@PathParam("calendar_id") Integer id,
-            @PathParam("id_usu") Integer id_usu) {
+    @Path("{id_usu}/{id_calen}")
+    public void remove(@PathParam("id_usu") Integer id_usu,
+                        @PathParam("id_calen") Integer id) {
         //Comprobamos que existe el usuario
         this.checkUser(id_usu);
 
@@ -106,48 +122,34 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
     }
 
     @GET
-    @Path("{id_usu}/calendars/{calendar_id}")
-    @Produces({"application/xml", "application/json"})
-    public Response find(@PathParam("calendar_id") Integer calendar_id,
-            @PathParam("id_usu") Integer id_usu) {
-        //Se comprueba la existencia del usuario
-        this.checkUser(id_usu);
-
-        /*Comprobamos que existe y obtenemos el calendario*/
-        Calendars calendar = this.checkCalendar(calendar_id);
-        return Response.ok(calendar).build();
-     
-        /*String querytxt = "SELECT d FROM dates d WHERE d.calendar_id = " + calendar_id;
-        Query query = em.createQuery(querytxt);
-        List<Object> calendars = query.getResultList();*/                    
-
-    }
-
-    @GET
-    @Path("{id_usu}/calendars")
+    @Path("{id_usu}")
     @Produces({"application/xml", "application/json"})
     public Response findAll(@PathParam("id_usu") Integer id_usu) {
         //Primero, comprobamos que el usuario exista
         checkUser(id_usu);
 
-        String querytxt = "SELECT c FROM calendars c WHERE c.user_id = " + id_usu;
-        Query query = em.createQuery(querytxt);
-        List<Calendars> calendars = query.getResultList();
+        String querytxt = "SELECT c FROM Calendars c WHERE c.userId = :userId";
         
-        if (calendars.isEmpty())
+        Query query = em.createQuery(querytxt);
+        query.setParameter("userId", new Users(id_usu));
+        List<Calendars> calendars = query.getResultList();
+
+        if (calendars.isEmpty()) {
             return Response.noContent().build();
-        else
-            return Response.ok((Calendars [])calendars.toArray()).build();
+        } else {
+            Calendars [] c = new Calendars[calendars.size()];
+            return Response.ok(calendarsToUriListString((Calendars[]) calendars.toArray(c), id_usu)).build();
+        }
 
 
     }
 
-    @GET
+    /*@GET
     @Path("{from}/{to}")
     @Produces({"application/xml", "application/json"})
     public List<Calendars> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
         return super.findRange(new int[]{from, to});
-    }
+    }*/
 
     @GET
     @Path("count")
@@ -163,7 +165,8 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
 
     private void checkUser(int id) {
         try {
-            em.createQuery("SELECT e FROM Users e where e.user_id = :user_id").setParameter("user_id", id).getSingleResult();
+            Query q = getEntityManager().createQuery("SELECT e FROM Users e where e.userId = :user_id");
+            Object u = q.setParameter("user_id", id).getSingleResult();
         } catch (NoResultException ex) {
             throw new WebApplicationException(new Throwable("User not found"), 404);
         }
@@ -176,5 +179,34 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
             throw new WebApplicationException(new Throwable("Calendar not found"), 404);
         }
         return cal;
+    }
+    
+    private String datesToUriListString(Dates[] dates, Integer user, Calendars calendar){
+	
+        String ret = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><calendars>";
+        ret+="<calendarId>"+calendar.getCalendarId()+"</calendarId>";
+        ret+="<name>"+calendar.getName()+"</name>";
+        ret+="<user>"+user.toString()+"</user>";
+        ret+="<dates>";
+      
+	for(Dates date : dates){
+	    ret += "<date>"+date.toUri(user.toString())+"</date>";
+	}
+	
+	ret += "</dates>";
+        ret +="</calendars>";
+	
+	return ret;
+    }
+    
+        private String calendarsToUriListString(Calendars[] calendars, Integer user){
+	String ret = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><dates>";
+	for(Calendars calendar : calendars){
+	    ret += "<calendar>"+calendar.toUri(user.toString())+"</calendar>";
+	}
+	
+	ret += "</dates>";
+	
+	return ret;
     }
 }
