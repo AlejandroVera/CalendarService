@@ -116,8 +116,7 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 	} catch (ParseException e) {}
 
 
-	Calendars cal = new Calendars(id_calen);
-	String querytxt = "SELECT d FROM Dates d WHERE d.calendarId = :cal JOIN d.calendarId c WHERE c.userId = :usu ";
+	String querytxt = "SELECT d FROM Dates d JOIN d.calendarId c WHERE d.calendarId = :cal AND c.userId = :usu ";
 	
 	//Aplicamos los filtros de fecha
 	if(from_date != null && to_date != null){
@@ -129,7 +128,7 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 	    querytxt += "AND (d.fechaComienzo <= :to OR d.fechaFinalizado <= :to)";
 	}
 	Query query = em.createQuery(querytxt);
-	query.setParameter("cal", cal);
+	query.setParameter("cal",  new Calendars(id_calen));
 	query.setParameter("usu", new Users(id_usu));
 	if(from_date != null)
 	    query.setParameter("from", from_date);
@@ -221,37 +220,47 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 	
 	checkUser(id_usu);
 	
-	String type = null;
 	String querytxt = "SELECT d FROM Dates d JOIN d.calendarId c WHERE c.userId = :usu ";
 	Calendar cal = new GregorianCalendar();
+	cal.setFirstDayOfWeek(Calendar.MONDAY);
 	cal.set(Calendar.HOUR, 0);
 	cal.set(Calendar.MINUTE, 0);
 	cal.set(Calendar.SECOND, 0);
 	cal.set(Calendar.MILLISECOND, 0);
 	
+	Calendar cal2 = null;
+	
 	period = period.toLowerCase();
 	if(period.equals("day")){
-	    type = "DAY";
+	    cal2 = (Calendar)cal.clone();
+	    cal2.add(Calendar.DAY_OF_YEAR, 1);
 	}else if(period.equals("week")){
 	    cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-	    type = "WEEK";
+	    cal2 = (Calendar)cal.clone();
+	    cal2.add(Calendar.WEEK_OF_YEAR, 1);
 	}else if(period.equals("month")){
 	    cal.set(Calendar.DAY_OF_MONTH, 1);
-	    type = "MONTH";
+	    cal2 = (Calendar)cal.clone();
+	    cal2.add(Calendar.MONTH, 1);
 	}else if(period.equals("year")){
 	    cal.set(Calendar.DAY_OF_MONTH, 1);
 	    cal.set(Calendar.MONTH, 1);
-	    type = "YEAR";
+	    cal2 = (Calendar)cal.clone();
+	    cal2.add(Calendar.YEAR, 1);
+	}
+	if(cal2 != null){
+	    querytxt += " AND ((d.fechaComienzo BETWEEN :fecha AND :fecha2 )"
+		    + " OR (d.fechaFinalizado BETWEEN :fecha AND :fecha2 )"
+		    + " OR (d.fechaComienzo <= :fecha AND :fecha2 >= d.fechaFinalizado))";
 	}
 	
 	Query q = em.createQuery(querytxt);
 	q.setParameter("usu", new Users(id_usu));
-	if(type != null){
-	    querytxt += " AND ((d.fechaComienzo BETWEEN :fecha AND :fecha + INTERVAL 1 "+type
-		    + ") OR (d.fechaFinalizado BETWEEN :fecha AND :fecha + INTERVAL 1 "+type+")"
-		    + " OR (d.fechaComienzo <= :fecha AND :fecha + INTERVAL 1 "+type+" >= d.fechaFinalizado))";
+	if(cal2 != null){
 	    q.setParameter("fecha", cal.getTime());
+	    q.setParameter("fecha2", cal2.getTime());
 	}
+	
 	return ""+q.getResultList().size();
 
     }
