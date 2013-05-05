@@ -29,7 +29,7 @@ import javax.ws.rs.core.Response;
  * @author borja
  */
 @Stateless
-@Path("")
+@Path("a")
 public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
 
     @PersistenceContext(unitName = "SOSCalendarPU")
@@ -47,7 +47,7 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
     }
 
     @POST
-    @Consumes({"{id_usu}/calendars"})
+    @Path("{id_usu}/calendars")
     public void create(Calendars entity,
             @PathParam("id_usu") Integer id_usu) {
 
@@ -68,7 +68,7 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
     }
 
     @PUT
-    @Consumes({"{id_usu}/calendars/{calendar_id}"})
+    @Path("{id_usu}/calendars/{calendar_id}")
     public void edit(Calendars entity,
             @PathParam("id_usu") Integer id_usu, @PathParam("calendar_id") Integer calendar_id) {
 
