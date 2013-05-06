@@ -89,64 +89,6 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
         super.remove(date);
     }
 
-    @GET
-    @Path("calendars/{id_usu}/{id_calen}/dates")
-    @Produces({"application/xml", "application/json"})
-    public Response findDatesOfCalendar(@PathParam("id_usu") Integer id_usu,
-			@PathParam("id_calen") Integer id_calen,
-			@QueryParam("max") @DefaultValue("-1") int max,
-			@QueryParam("from_date") @DefaultValue("") String from_date_str,
-			@QueryParam("to_date") @DefaultValue("") String to_date_str) {
-	
-	//Primero, comprobamos que el usuario exista
-	checkUser(id_usu);
-	
-	//Comprobamos que el calendario exista
-	checkCalendar(id_calen);
-	
-	//Obtenemos los parámetros de filtrado
-	Date from_date = null;
-	Date to_date = null;
-	DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-	try {
-	    from_date = df.parse(from_date_str);
-	} catch (ParseException e) {}
-	try {
-	    to_date = df.parse(to_date_str);
-	} catch (ParseException e) {}
-
-
-	String querytxt = "SELECT d FROM Dates d JOIN d.calendarId c WHERE d.calendarId = :cal AND c.userId = :usu ";
-	
-	//Aplicamos los filtros de fecha
-	if(from_date != null && to_date != null){
-	    querytxt += "AND ((d.fechaComienzo >= :from AND d.fechaComienzo <= :to) "
-		   + "OR (d.fechaFinalizado >= :from AND d.fechaFinalizado <= :to))";
-	}else if(from_date != null){
-	    querytxt += "AND (d.fechaComienzo >= :from OR d.fechaFinalizado >= :from)";
-	}else if(to_date != null){
-	    querytxt += "AND (d.fechaComienzo <= :to OR d.fechaFinalizado <= :to)";
-	}
-	Query query = em.createQuery(querytxt);
-	query.setParameter("cal",  new Calendars(id_calen));
-	query.setParameter("usu", new Users(id_usu));
-	if(from_date != null)
-	    query.setParameter("from", from_date);
-	if(to_date != null)
-	    query.setParameter("to", to_date);
-	
-	//Aplicamos el filtro de maximo devuelto
-	if(max > 0)
-	    query.setMaxResults(max);
-	
-	List<Dates> dates = query.getResultList();
-	if(dates.size() > 0){
-	    Dates []d = new Dates[dates.size()];
-	    return Response.ok(datesToUriListString(dates.toArray(d), id_usu)).build();
-	}else
-	    return Response.noContent().build();
-	
-    }
     
     @GET
     @Path("dates/{id_usu}/")
@@ -154,7 +96,8 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
     public Response findDates(@PathParam("id_usu") Integer id_usu,
 			@QueryParam("max") @DefaultValue("-1") int max,
 			@QueryParam("from_date") @DefaultValue("") String from_date_str,
-			@QueryParam("to_date") @DefaultValue("") String to_date_str) {
+			@QueryParam("to_date") @DefaultValue("") String to_date_str,
+			@QueryParam("calendar") @DefaultValue("-1") int calendar_id) {
 	
 	//Primero, comprobamos que el usuario exista
 	checkUser(id_usu);
@@ -174,6 +117,9 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 
 	String querytxt = "SELECT d FROM Dates d JOIN d.calendarId c WHERE c.userId = :usu ";
 	
+	if(calendar_id > 0)
+	    querytxt += "AND d.calendarId = :cal ";
+	
 	//Aplicamos los filtros de fecha
 	if(from_date != null && to_date != null){
 	    querytxt += "AND ((d.fechaComienzo >= :from AND d.fechaComienzo <= :to) "
@@ -189,6 +135,8 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 	    query.setParameter("from", from_date);
 	if(to_date != null)
 	    query.setParameter("to", to_date);
+	if(calendar_id >= 0)
+	    query.setParameter("cal", new Calendars(calendar_id));
 	
 	//Aplicamos el filtro de maximo devuelto
 	if(max > 0)
