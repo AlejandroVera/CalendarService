@@ -124,4 +124,8 @@ public class Calendars implements Serializable {
 	return "SOSCalendar.Calendars[ calendarId=" + calendarId + " ]";
     }
     
+    public String toUri(String user){
+ 	return "calendars/"+user+"/"+this.calendarId;
+    }
+    
 }
