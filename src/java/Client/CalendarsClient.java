@@ -13,7 +13,7 @@ import com.sun.jersey.api.client.WebResource;
  * [calendars]<br>
  * USAGE:
  * <pre>
- *        CalendarsClient client = new CalendarsClient();
+ *        CalendarClient client = new CalendarClient();
  *        Object response = client.XXX(...);
  *        // do whatever with response
  *        client.close();

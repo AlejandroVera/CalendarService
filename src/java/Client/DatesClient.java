@@ -82,36 +82,6 @@ public class DatesClient {
         webResource.path(java.text.MessageFormat.format("dates/{0}/{1}", new Object[]{id_usu, id_date})).type(javax.ws.rs.core.MediaType.APPLICATION_JSON).put(requestEntity);
     }
 
-    public <T> T findDatesOfCalendar_XML(Class<T> responseType, String id_usu, String id_calen, String max, String to_date, String from_date) throws UniformInterfaceException {
-        WebResource resource = webResource;
-        if (max != null) {
-            resource = resource.queryParam("max", max);
-        }
-        if (to_date != null) {
-            resource = resource.queryParam("to_date", to_date);
-        }
-        if (from_date != null) {
-            resource = resource.queryParam("from_date", from_date);
-        }
-        resource = resource.path(java.text.MessageFormat.format("calendars/{0}/{1}/dates", new Object[]{id_usu, id_calen}));
-        return resource.accept(javax.ws.rs.core.MediaType.APPLICATION_XML).get(responseType);
-    }
-
-    public <T> T findDatesOfCalendar_JSON(Class<T> responseType, String id_usu, String id_calen, String max, String to_date, String from_date) throws UniformInterfaceException {
-        WebResource resource = webResource;
-        if (max != null) {
-            resource = resource.queryParam("max", max);
-        }
-        if (to_date != null) {
-            resource = resource.queryParam("to_date", to_date);
-        }
-        if (from_date != null) {
-            resource = resource.queryParam("from_date", from_date);
-        }
-        resource = resource.path(java.text.MessageFormat.format("calendars/{0}/{1}/dates", new Object[]{id_usu, id_calen}));
-        return resource.accept(javax.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
-    }
-
     public void create_XML(Object requestEntity, String id_usu, String id_calen) throws UniformInterfaceException {
         webResource.path(java.text.MessageFormat.format("calendars/{0}/{1}/dates", new Object[]{id_usu, id_calen})).type(javax.ws.rs.core.MediaType.APPLICATION_XML).post(requestEntity);
     }
