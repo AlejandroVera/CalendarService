@@ -23,7 +23,8 @@ public class ClientLauncher {
 	    
 	    if(action.equals("getUserCalendars")){
 		requestUserCalendars();
-	    }
+	    }else
+		System.out.println("Acción desconocida\n");
 	    
 	}
 	
@@ -37,9 +38,12 @@ public class ClientLauncher {
     }
     
     private static void requestUserCalendars(){
-	System.out.println("ID del usuario:");
+	System.out.print("ID del usuario:");
 	in.hasNextInt();
 	Integer id = in.nextInt();
+	in.nextLine();
+	System.out.println();
+	
 	CalendarsClient calcli = new CalendarsClient();
 	
 	//TODO: que hay que pasarlecomo primer argumento?
