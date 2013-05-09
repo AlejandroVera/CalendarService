@@ -48,7 +48,7 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
     @POST
     @Consumes({"application/xml", "application/json"})
     @Path("calendars/{id_usu}/{id_calen}/dates")
-    public void create(Dates entity, @PathParam("id_usu") Integer id_usu, @PathParam("id_calen") Integer id_calen) {
+    public Response create(Dates entity, @PathParam("id_usu") Integer id_usu, @PathParam("id_calen") Integer id_calen) {
 	
 	//Primero, comprobamos que el usuario exista
 	checkUser(id_usu);
@@ -58,7 +58,7 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 	
         super.create(entity);
 	
-	System.out.println("ID creado:"+entity.getDateId());
+	return Response.status(Response.Status.NO_CONTENT).header("Location", entity.toUri(""+id_usu)).build();
     }
 
     @PUT
