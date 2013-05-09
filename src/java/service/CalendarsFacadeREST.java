@@ -41,7 +41,7 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
 
     @POST
     @Path("{id_usu}")
-    public void create(Calendars entity,
+    public Response create(Calendars entity,
             @PathParam("id_usu") Integer id_usu) {
 
         //Primero, comprobamos que el usuario exista
@@ -59,6 +59,8 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
         }
 
         super.create(entity);
+        
+        return Response.status(Response.Status.NO_CONTENT).header("Location", entity.toUri(""+id_usu)).build();
     }
 
     @GET
