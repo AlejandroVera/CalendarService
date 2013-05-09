@@ -53,6 +53,10 @@ public class CalendarsClient {
         webResource.path(java.text.MessageFormat.format("{0}/{1}", new Object[]{id_usu, id_calen})).type(javax.ws.rs.core.MediaType.APPLICATION_XML).put(requestEntity);
     }
 
+    public ClientResponse createDate(Object requestEntity, String id_usu, String id_calen) throws UniformInterfaceException {
+        return webResource.path(java.text.MessageFormat.format("{0}/{1}/dates", new Object[]{id_usu, id_calen})).type(javax.ws.rs.core.MediaType.APPLICATION_XML).post(ClientResponse.class, requestEntity);
+    }
+
     public ClientResponse create(Object requestEntity, String id_usu) throws UniformInterfaceException {
         return webResource.path(java.text.MessageFormat.format("{0}", new Object[]{id_usu})).type(javax.ws.rs.core.MediaType.APPLICATION_XML).post(ClientResponse.class, requestEntity);
     }
