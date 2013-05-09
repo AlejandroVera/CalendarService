@@ -45,22 +45,6 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
         super(Dates.class);
     }
 
-    @POST
-    @Consumes({"application/xml"})
-    @Path("calendars/{id_usu}/{id_calen}/dates")
-    public Response create(Dates entity, @PathParam("id_usu") Integer id_usu, @PathParam("id_calen") Integer id_calen) {
-	
-	//Primero, comprobamos que el usuario exista
-	checkUser(id_usu);
-	
-	//Comprobamos que el calendario exista
-	checkCalendar(id_calen);
-	
-        super.create(entity);
-	
-	return Response.status(Response.Status.NO_CONTENT).header("Location", entity.toUri(""+id_usu)).build();
-    }
-
     @PUT
     @Consumes({"application/xml"})
     @Path("dates/{id_usu}/{id_date}")

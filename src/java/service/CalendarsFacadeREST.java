@@ -8,6 +8,7 @@ import SOSCalendar.Calendars;
 import SOSCalendar.Dates;
 import SOSCalendar.Users;
 import java.util.List;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -31,6 +32,8 @@ import javax.ws.rs.core.Response;
 @Stateless
 @Path("calendars")
 public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
+    @EJB
+    private DatesFacadeREST datesFacadeREST;
 
     @PersistenceContext(unitName = "SOSCalendarPU")
     private EntityManager em;
@@ -52,8 +55,9 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
         String name = entity.getName();
 
         String querytxt = "SELECT c FROM Calendars c WHERE c.name = :calName";
+	Calendars cal = new Calendars();
         Query query = em.createQuery(querytxt);
-        query.setParameter("calName", entity);
+        query.setParameter("calName", entity.getName());
         if (!query.getResultList().isEmpty()) {
             throw new WebApplicationException(new Throwable("Conflict: "
                     + "There is already a calendar with this name"), 409);
@@ -62,6 +66,21 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
         super.create(entity);
         
         return Response.status(Response.Status.NO_CONTENT).header("Location", entity.toUri(""+id_usu)).build();
+    }
+    
+    @POST
+    @Consumes({"application/xml"})
+    @Path("{id_usu}/{id_calen}/dates")
+    public Response createDate(Dates entity, @PathParam("id_usu") Integer id_usu, @PathParam("id_calen") Integer id_calen) {
+	System.out.println("USU:"+id_usu+" CAL:"+id_calen);
+	//Primero, comprobamos que el usuario exista
+	checkUser(id_usu);
+	
+	//Comprobamos que el calendario exista
+	checkCalendar(id_calen);
+	datesFacadeREST.create(entity);
+	
+	return Response.status(Response.Status.NO_CONTENT).header("Location", entity.toUri(""+id_usu)).build();
     }
 
     @GET
