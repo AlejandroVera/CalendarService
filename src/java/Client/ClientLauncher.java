@@ -62,10 +62,11 @@ public class ClientLauncher {
 	System.out.println("[2] Crear un calendario");
 	System.out.println("[3] Crear una cita en un calendario");
 	System.out.println("[4] Modificar una cita");
-	System.out.println("[5] Obtener lista de usuarios");
-	System.out.println("[6] Obtener lista de calendarios de un usuario");
-	System.out.println("[7] Obtener lista de citas de un calendario");
-	System.out.println("[8] Obtener lista de citas de un usuario");
+	System.out.println("[5] Ver una cita");
+	System.out.println("[6] Obtener lista de usuarios");
+	System.out.println("[7] Obtener lista de calendarios de un usuario");
+	System.out.println("[8] Obtener lista de citas de un calendario");
+	System.out.println("[9] Obtener lista de citas de un usuario");
 	
 	leido = readLine("Número de acción: ");
 	try {
@@ -106,6 +107,33 @@ public class ClientLauncher {
     }
 
     private static void createDate() {
+	int idUs = readInt("ID del usuario: ");
+	int idCal = readInt("ID del calendario: ");
+
+	Dates date = new Dates();
+	date.setCalendarId(new Calendars(idCal));
+	date.setName(readLine("Nombre de la cita: "));
+	date.setDescription(readLine("Descripción: "));
+	date.setFechaComienzo(readDate("Fecha comienzo (yyyy-MM-dd HH:mm): "));
+	date.setFechaFinalizado(readDate("Fecha finalización (yyyy-MM-dd HH:mm): "));
+	date.setLugar(readLine("Lugar: "));
+
+	DatesClient cli = new DatesClient();
+	ClientResponse resp = cli.create(date, ""+idUs, ""+idCal);
+	
+	if (resp.getStatus() == ClientResponse.Status.NO_CONTENT.getStatusCode()) {
+	    System.out.println("La cita ha sido creada");
+	} else if (resp.getStatus() == ClientResponse.Status.NOT_FOUND.getStatusCode()) {
+	    System.out.println("El propietario o calendario no existe");
+	} else {
+	    System.out.println("Error desconocido");
+	}
+	cli.close();
+	
+    }
+    
+    //TODO
+    private static void editDate() {
 	int idUs = readInt("ID del usuario: ");
 	int idCal = readInt("ID del calendario: ");
 

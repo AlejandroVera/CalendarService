@@ -76,7 +76,7 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
     
     @GET
     @Path("dates/{id_usu}/")
-    @Produces({"application/xml", "application/json"})
+    @Produces({"application/xml"})
     public Response findDates(@PathParam("id_usu") Integer id_usu,
 			@QueryParam("max") @DefaultValue("-1") int max,
 			@QueryParam("from_date") @DefaultValue("") String from_date_str,
@@ -137,6 +137,7 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
     
     @GET
     @Path("dates/{id_usu}/{id_date}")
+    @Produces({"application/xml"})
     public Dates find(@PathParam("id_usu") Integer id_usu, @PathParam("id_date") Integer id_date) {
 	
 	//Primero, comprobamos que el usuario exista
@@ -148,15 +149,6 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 	//La borramos
         return date;
     }
-
-    /*
-    @GET
-    @Path("{from}/{to}")
-    @Produces({"application/xml", "application/json"})
-    public List<Dates> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
-        return super.findRange(new int[]{from, to});
-    }
-    * */
 
     @GET
     @Path("datescount/{id_usu}")
