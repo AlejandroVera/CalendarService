@@ -5,7 +5,6 @@
 package Client;
 
 import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
 
@@ -45,7 +44,7 @@ public class DatesClient {
         return resource.accept(javax.ws.rs.core.MediaType.TEXT_PLAIN).get(String.class);
     }
 
-    public <T> T findDates_XML(Class<T> responseType, String id_usu, String max, String to_date, String from_date, String calendar) throws UniformInterfaceException {
+    public <T> T findDates(Class<T> responseType, String id_usu, String max, String to_date, String from_date, String calendar) throws UniformInterfaceException {
         WebResource resource = webResource;
         if (max != null) {
             resource = resource.queryParam("max", max);
@@ -63,36 +62,14 @@ public class DatesClient {
         return resource.accept(javax.ws.rs.core.MediaType.APPLICATION_XML).get(responseType);
     }
 
-    public <T> T findDates_JSON(Class<T> responseType, String id_usu, String max, String to_date, String from_date, String calendar) throws UniformInterfaceException {
-        WebResource resource = webResource;
-        if (max != null) {
-            resource = resource.queryParam("max", max);
-        }
-        if (to_date != null) {
-            resource = resource.queryParam("to_date", to_date);
-        }
-        if (from_date != null) {
-            resource = resource.queryParam("from_date", from_date);
-        }
-        if (calendar != null) {
-            resource = resource.queryParam("calendar", calendar);
-        }
-        resource = resource.path(java.text.MessageFormat.format("dates/{0}", new Object[]{id_usu}));
-        return resource.accept(javax.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
-    }
-
     public void edit(Object requestEntity, String id_usu, String id_date) throws UniformInterfaceException {
         webResource.path(java.text.MessageFormat.format("dates/{0}/{1}", new Object[]{id_usu, id_date})).type(javax.ws.rs.core.MediaType.APPLICATION_XML).put(requestEntity);
-    }
-
-    public ClientResponse create(Object requestEntity, String id_usu, String id_calen) throws UniformInterfaceException {
-        return webResource.path(java.text.MessageFormat.format("calendars/{0}/{1}/dates", new Object[]{id_usu, id_calen})).type(javax.ws.rs.core.MediaType.APPLICATION_XML).post(ClientResponse.class, requestEntity);
     }
 
     public <T> T find(Class<T> responseType, String id_usu, String id_date) throws UniformInterfaceException {
         WebResource resource = webResource;
         resource = resource.path(java.text.MessageFormat.format("dates/{0}/{1}", new Object[]{id_usu, id_date}));
-        return resource.get(responseType);
+        return resource.accept(javax.ws.rs.core.MediaType.APPLICATION_XML).get(responseType);
     }
 
     public void close() {
