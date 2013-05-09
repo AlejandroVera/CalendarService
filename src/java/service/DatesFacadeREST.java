@@ -46,7 +46,7 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
     }
 
     @POST
-    @Consumes({"application/xml", "application/json"})
+    @Consumes({"application/xml"})
     @Path("calendars/{id_usu}/{id_calen}/dates")
     public Response create(Dates entity, @PathParam("id_usu") Integer id_usu, @PathParam("id_calen") Integer id_calen) {
 	
@@ -62,7 +62,7 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
     }
 
     @PUT
-    @Consumes({"application/xml", "application/json"})
+    @Consumes({"application/xml"})
     @Path("dates/{id_usu}/{id_date}")
     public void edit(Dates entity, @PathParam("id_usu") Integer id_usu, @PathParam("id_date") Integer id_date) {
 	

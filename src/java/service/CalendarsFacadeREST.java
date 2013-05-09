@@ -40,6 +40,7 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
     }
 
     @POST
+    @Consumes({"application/xml"})
     @Path("{id_usu}")
     public Response create(Calendars entity,
             @PathParam("id_usu") Integer id_usu) {
@@ -65,7 +66,7 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
 
     @GET
     @Path("{id_usu}/{id_calen}")
-    @Produces({"application/xml", "application/json"})
+    @Produces({"application/xml"})
     public Response find(@PathParam("id_usu") Integer id_usu,
             @PathParam("id_calen") Integer id_calen) {
         //Se comprueba la existencia del usuario
@@ -88,6 +89,7 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
     }
 
     @PUT
+    @Consumes({"application/xml"})
     @Path("{id_usu}/{id_calen}")
     public void edit(Calendars entity,
             @PathParam("id_usu") Integer id_usu, @PathParam("id_calen") Integer id_calen) {
@@ -125,7 +127,7 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
 
     @GET
     @Path("{id_usu}")
-    @Produces({"application/xml", "application/json"})
+    @Produces({"application/xml"})
     public Response findAll(@PathParam("id_usu") Integer id_usu) {
         //Primero, comprobamos que el usuario exista
         checkUser(id_usu);
