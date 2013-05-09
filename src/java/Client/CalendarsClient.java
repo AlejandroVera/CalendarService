@@ -5,6 +5,7 @@
 package Client;
 
 import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
 
@@ -13,7 +14,7 @@ import com.sun.jersey.api.client.WebResource;
  * [calendars]<br>
  * USAGE:
  * <pre>
- *        CalendarClient client = new CalendarClient();
+ *        CalendarsClient client = new CalendarsClient();
  *        Object response = client.XXX(...);
  *        // do whatever with response
  *        client.close();
@@ -58,8 +59,8 @@ public class CalendarsClient {
         webResource.path(java.text.MessageFormat.format("{0}/{1}", new Object[]{id_usu, id_calen})).put();
     }
 
-    public void create(String id_usu) throws UniformInterfaceException {
-        webResource.path(java.text.MessageFormat.format("{0}", new Object[]{id_usu})).post();
+    public ClientResponse create(String id_usu) throws UniformInterfaceException {
+        return webResource.path(java.text.MessageFormat.format("{0}", new Object[]{id_usu})).post(ClientResponse.class);
     }
 
     public <T> T find_XML(Class<T> responseType, String id_usu, String id_calen) throws UniformInterfaceException {
