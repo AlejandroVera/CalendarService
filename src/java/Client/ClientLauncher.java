@@ -15,6 +15,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Scanner;
+import javax.ws.rs.core.Response;
 
 /**
  *
@@ -40,7 +41,7 @@ public class ClientLauncher {
 		    createDate();
 		    break;
 		case 4:
-		    System.out.println("Acción aun por crear\n");
+		    editDate();
 		    break;
 		case 5:
 		    System.out.println("Acción aun por crear\n");
@@ -118,8 +119,8 @@ public class ClientLauncher {
 	date.setFechaFinalizado(readDate("Fecha finalización (yyyy-MM-dd HH:mm): "));
 	date.setLugar(readLine("Lugar: "));
 
-	DatesClient cli = new DatesClient();
-	ClientResponse resp = cli.create(date, ""+idUs, ""+idCal);
+	CalendarsClient cli = new CalendarsClient();
+	ClientResponse resp = cli.createDate(date, ""+idUs, ""+idCal);
 	
 	if (resp.getStatus() == ClientResponse.Status.NO_CONTENT.getStatusCode()) {
 	    System.out.println("La cita ha sido creada");
@@ -135,18 +136,30 @@ public class ClientLauncher {
     //TODO
     private static void editDate() {
 	int idUs = readInt("ID del usuario: ");
-	int idCal = readInt("ID del calendario: ");
-
+	int idCita = readInt("ID de la cita: ");
+	Dates date = null; 
+	DatesClient dcli = new DatesClient();
+	ClientResponse antes = dcli.find(ClientResponse.class, ""+idUs, ""+idCita);
+	
+	if(antes.getStatus() == Response.Status.OK.getStatusCode()){
+	   date = antes.getEntity(Dates.class);
+	   System.out.println("Indique los valores a modificar. Si no quiere modificar alguno, pulse Enter para mantener el valor previo.");
+	   
+	   
+	}else
+	    System.out.println("El propietario o cita no existe");
+	
+/*
 	Dates date = new Dates();
-	date.setCalendarId(new Calendars(idCal));
+	date.setCalendarId(antes.getCalendarId());
 	date.setName(readLine("Nombre de la cita: "));
 	date.setDescription(readLine("Descripción: "));
 	date.setFechaComienzo(readDate("Fecha comienzo (yyyy-MM-dd HH:mm): "));
 	date.setFechaFinalizado(readDate("Fecha finalización (yyyy-MM-dd HH:mm): "));
 	date.setLugar(readLine("Lugar: "));
 
-	DatesClient cli = new DatesClient();
-	ClientResponse resp = cli.create(date, ""+idUs, ""+idCal);
+	CalendarsClient cli = new CalendarsClient();
+	ClientResponse resp = cli.createDate(date, ""+idUs, ""+idCal);
 	
 	if (resp.getStatus() == ClientResponse.Status.NO_CONTENT.getStatusCode()) {
 	    System.out.println("La cita ha sido creada");
@@ -156,6 +169,8 @@ public class ClientLauncher {
 	    System.out.println("Error desconocido");
 	}
 	cli.close();
+	
+	*/
 	
     }
 
