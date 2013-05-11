@@ -223,12 +223,12 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
     }
     
         private String calendarsToUriListString(Calendars[] calendars, Integer user){
-	String ret = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><dates>";
+	String ret = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><calendars>";
 	for(Calendars calendar : calendars){
 	    ret += "<calendar>"+calendar.toUri(user.toString())+"</calendar>";
 	}
 	
-	ret += "</dates>";
+	ret += "</calendars>";
 	
 	return ret;
     }
