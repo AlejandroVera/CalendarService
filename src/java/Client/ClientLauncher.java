@@ -57,8 +57,10 @@ public class ClientLauncher {
                 case 9:
                     editCalendar();
                     break;
+                case 10:
+                    requestCalendar();
                 default:
-                    requestUsers();
+                    System.out.println();
             }
 
         }
@@ -179,12 +181,12 @@ public class ClientLauncher {
             date.setDescription(param);
         }
 
-        paramDate = readDate("Fecha comienzo (yyyy-MM-dd HH:mm): ");
+        paramDate = readDate("Fecha comienzo (yyyy-MM-dd HH:mm): ", true);
         if (paramDate != null) {
             date.setFechaComienzo(paramDate);
         }
 
-        paramDate = readDate("Fecha finalización (yyyy-MM-dd HH:mm): ");
+        paramDate = readDate("Fecha finalización (yyyy-MM-dd HH:mm): ", true);
         if (paramDate != null) {
             date.setFechaFinalizado(paramDate);
         }
@@ -227,10 +229,14 @@ public class ClientLauncher {
     private static void requestUsers() {
         UsersClient cli = new UsersClient();
 
-        List<Users> usuarios = cli.findAll_XML(List.class);
-        for (Users user : usuarios) {
-            System.out.println(user.toString());
-        }
+        ClientResponse respuesta = cli.findAll_XML(ClientResponse.class);
+        String xml = respuesta.getEntity(String.class);
+
+        //TODO: Parsear xml?
+        System.out.print(xml);
+        /*for (Users user : usuarios) {
+         System.out.println(user.toString());
+         }*/
         cli.close();
     }
 
@@ -254,10 +260,10 @@ public class ClientLauncher {
             String fechaComienzo, fechaFinal;
             Integer max;
 
-            Integer idCal = readInt("ID del calendario: ");
+            Integer idCal = readInt("ID del calendario: ", true);
             fechaComienzo = readLine("Fecha comienzo (yyyy-MM-dd HH:mm): ");
             fechaFinal = readLine("Fecha finalización (yyyy-MM-dd HH:mm): ");
-            max = readInt("Número máximo de resultados: ");
+            max = readInt("Número máximo de resultados: ", true);
 
             response = cli.findDates(ClientResponse.class, idUs.toString(), max.toString(), fechaFinal, fechaComienzo, idCal.toString());
         }
@@ -292,16 +298,16 @@ public class ClientLauncher {
         if (antes.getStatus() == Response.Status.OK.getStatusCode()) {
             calendar = antes.getEntity(Calendars.class);
             System.out.println("Indique los valores a modificar. Si no quiere modificar alguno, pulse Enter para mantener el valor previo.");
+            String param = readLine("Nombre del calendario: ");
+            if (!param.equals("")) {
+                calendar.setName(param);
+            }           
 
+            cli.edit(calendar, idUs.toString(), idCal.toString());
         } else {
-            System.out.println("El propietario o cita no existe");
-            return;
+            System.out.println("El propietario o cita no existe");           
         }
 
-        String param = readLine("Nombre del calendario: ");
-        if (!param.equals("")) {
-            calendar.setName(param);
-        }
 
         cli.close();
 
@@ -316,15 +322,15 @@ public class ClientLauncher {
         int status = response.getStatus();
 
         if (status == ClientResponse.Status.OK.getStatusCode()) {
-            Dates date = response.getEntity(Dates.class);
-            System.out.println(date.toString());
+            String date = response.getEntity(String.class);
+            System.out.println(date);
 
         } else if (status == ClientResponse.Status.NOT_FOUND.getStatusCode()) {
             System.out.println("El propietario o cita no existe");
         } else {
             System.out.println("Error desconocido");
         }
-         cli.close();
+        cli.close();
     }
 
     private static void requestCalendar() {
@@ -336,7 +342,7 @@ public class ClientLauncher {
         int status = response.getStatus();
 
         if (status == ClientResponse.Status.OK.getStatusCode()) {
-            
+
             //TODO: Parsear xml?
             String respuesta = response.getEntity(String.class);
             System.out.println(respuesta);
@@ -397,7 +403,7 @@ public class ClientLauncher {
                 date = null;
             }
         } while (date == null);
-
+        System.out.println(date.toString());
         return date;
     }
 }

@@ -93,9 +93,12 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 	DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 	try {
 	    from_date = df.parse(from_date_str);
+            System.out.println(from_date.toString());
 	} catch (ParseException e) {}
 	try {
 	    to_date = df.parse(to_date_str);
+            System.out.println(to_date.toString());
+
 	} catch (ParseException e) {}
 
 

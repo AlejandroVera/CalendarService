@@ -78,6 +78,8 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
 	
 	//Comprobamos que el calendario exista
 	checkCalendar(id_calen);
+        System.out.println("Fecha comienzo: "+entity.getFechaComienzo().toString());
+        System.out.println("Fecha final: "+entity.getFechaFinalizado().toString());
 	datesFacadeREST.create(entity);
 	
 	return Response.status(Response.Status.NO_CONTENT).header("Location", entity.toUri(""+id_usu)).build();
