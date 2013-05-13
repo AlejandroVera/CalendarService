@@ -6,6 +6,8 @@ package service;
 
 import SOSCalendar.Calendars;
 import SOSCalendar.Dates;
+import SOSCalendar.DateUri;
+import SOSCalendar.RESTUri;
 import SOSCalendar.Users;
 import com.sun.xml.rpc.processor.modeler.j2ee.xml.messageDestinationLinkType;
 import java.text.DateFormat;
@@ -14,6 +16,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.LinkedList;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -130,9 +133,9 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 	    query.setMaxResults(max);
 	
 	List<Dates> dates = query.getResultList();
+	
 	if(dates.size() > 0){
-	    Dates []d = new Dates[dates.size()];
-	    return Response.ok(datesToUriListString(dates.toArray(d), id_usu)).build();
+	    return Response.ok(datesToUriList(dates.toArray(new Dates[0]), id_usu)).build();
 	}else
 	    return Response.noContent().build();
 	
@@ -155,7 +158,7 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 
     @GET
     @Path("datescount/{id_usu}")
-    @Produces("text/plain")
+    @Produces({"text/plain"})
     public String datescount(@PathParam("id_usu") Integer id_usu,
 			    @QueryParam("period") @DefaultValue("") String period) {
 	
@@ -237,14 +240,14 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 	}
     }
     
-    private String datesToUriListString(Dates[] dates, Integer user){
-	String ret = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><dates>";
-	for(Dates date : dates){
-	    ret += "<date>"+date.toUri(user.toString())+"</date>";
+    private DateUri[] datesToUriList(Dates[] dates, Integer user){
+	List<DateUri> ul = new LinkedList<DateUri>();
+
+	for(Dates d : dates){
+	    ul.add(d.toUri());
 	}
 	
-	ret += "</dates>";
+	return (DateUri[]) ul.toArray(new DateUri[ul.size()]);
 	
-	return ret;
     }
 }

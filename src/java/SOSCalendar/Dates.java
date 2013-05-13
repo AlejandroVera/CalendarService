@@ -42,6 +42,7 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Dates.findByFechaComienzo", query = "SELECT d FROM Dates d WHERE d.fechaComienzo = :fechaComienzo"),
     @NamedQuery(name = "Dates.findByFechaFinalizado", query = "SELECT d FROM Dates d WHERE d.fechaFinalizado = :fechaFinalizado")})
 public class Dates implements Serializable {
+    private static final String BASE_URI = "http://localhost:8080/SOSCalendar/webresources";
     @Basic(optional = false)
     @NotNull
     @Column(name = "fecha_comienzo")
@@ -174,8 +175,8 @@ public class Dates implements Serializable {
         this.fechaFinalizado = fechaFinalizado;
     }
     
-    public String toUri(String user){
- 	return "dates/"+user+"/"+this.dateId;
+    public DateUri toUri(){
+ 	return new DateUri(BASE_URI+"/dates/"+calendarId.getUserId().getUserId()+"/"+this.dateId);
     }
     
 }

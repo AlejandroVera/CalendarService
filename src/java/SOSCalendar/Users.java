@@ -35,6 +35,7 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Users.findByUserId", query = "SELECT u FROM Users u WHERE u.userId = :userId"),
     @NamedQuery(name = "Users.findByName", query = "SELECT u FROM Users u WHERE u.name = :name")})
 public class Users implements Serializable {
+    private static final String BASE_URI = "http://localhost:8080/SOSCalendar/webresources";
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -109,6 +110,10 @@ public class Users implements Serializable {
     @Override
     public String toString() {
 	return "SOSCalendar.Users[ userId=" + userId + " ]";
+    }
+    
+    public RESTUri toUri(){
+ 	return new RESTUri(BASE_URI+"/users/"+this.userId);
     }
     
 }

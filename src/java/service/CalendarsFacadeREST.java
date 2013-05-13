@@ -6,7 +6,11 @@ package service;
 
 import SOSCalendar.Calendars;
 import SOSCalendar.Dates;
+import SOSCalendar.RESTUri;
 import SOSCalendar.Users;
+import SOSCalendar.CalendarResponse;
+import SOSCalendar.CalendarUri;
+import java.util.LinkedList;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -65,7 +69,7 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
 
         super.create(entity);
         
-        return Response.status(Response.Status.NO_CONTENT).header("Location", entity.toUri(""+id_usu)).build();
+        return Response.status(Response.Status.NO_CONTENT).header("Location", entity.toUri()).build();
     }
     
     @POST
@@ -82,7 +86,7 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
         System.out.println("Fecha final: "+entity.getFechaFinalizado().toString());
 	datesFacadeREST.create(entity);
 	
-	return Response.status(Response.Status.NO_CONTENT).header("Location", entity.toUri(""+id_usu)).build();
+	return Response.status(Response.Status.NO_CONTENT).header("Location", entity.toUri()).build();
     }
 
     @GET
@@ -104,9 +108,7 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
         List <Dates> dates = query.getResultList();
         Dates [] d = new Dates [dates.size()];
         
-        String resultado = this.datesToUriListString(dates.toArray(d), id_usu, calendar);
-        
-        return Response.ok(resultado).build();
+        return Response.ok(new CalendarResponse(calendar)).build();
     }
 
     @PUT
@@ -163,7 +165,7 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
             return Response.noContent().build();
         } else {
             Calendars [] c = new Calendars[calendars.size()];
-            return Response.ok(calendarsToUriListString((Calendars[]) calendars.toArray(c), id_usu)).build();
+            return Response.ok(calendarsToUriList((Calendars[]) calendars.toArray(c), id_usu)).build();
         }
 
 
@@ -206,32 +208,15 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
         return cal;
     }
     
-    private String datesToUriListString(Dates[] dates, Integer user, Calendars calendar){
-	
-        String ret = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><calendars>";
-        ret+="<calendarId>"+calendar.getCalendarId()+"</calendarId>";
-        ret+="<name>"+calendar.getName()+"</name>";
-        ret+="<user>"+user.toString()+"</user>";
-        ret+="<dates>";
-      
-	for(Dates date : dates){
-	    ret += "<date>"+date.toUri(user.toString())+"</date>";
-	}
-	
-	ret += "</dates>";
-        ret +="</calendars>";
-	
-	return ret;
-    }
     
-        private String calendarsToUriListString(Calendars[] calendars, Integer user){
-	String ret = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><calendars>";
-	for(Calendars calendar : calendars){
-	    ret += "<calendar>"+calendar.toUri(user.toString())+"</calendar>";
-	}
-	
-	ret += "</calendars>";
-	
-	return ret;
+        private CalendarUri[] calendarsToUriList(Calendars[] calendars, Integer user){
+	    List<CalendarUri> ul = new LinkedList<CalendarUri>();
+
+	    for(Calendars c : calendars){
+		ul.add(c.toUri());
+	    }
+
+	    return (CalendarUri[]) ul.toArray(new CalendarUri[ul.size()]);
+
     }
 }
