@@ -42,7 +42,7 @@ public class CalendarResponse implements Serializable {
     @Column(name = "name")
     private String name;
     @ManyToOne(optional = false)
-    private RESTUri user;
+    private UserUri user;
     private DateUri[] dates;
 
     public CalendarResponse() {
@@ -90,11 +90,11 @@ public class CalendarResponse implements Serializable {
 	this.dates = dates;
     }
 
-    public RESTUri getUser() {
+    public UserUri getUser() {
 	return user;
     }
 
-    public void setUser(RESTUri user) {
+    public void setUser(UserUri user) {
 	this.user = user;
     }
 
@@ -120,7 +120,15 @@ public class CalendarResponse implements Serializable {
 
     @Override
     public String toString() {
-	return "SOSCalendar.CalendarResponse[ id=" + calendarId + " ]";
+	String respuesta = "ID del calendario: " + calendarId + "\n";
+        respuesta+="userUri: "+this.getUser().getUri() +"\n" ;
+        respuesta+="Nombre: "+this.getName() +"\n" ;
+        respuesta+="Citas:\n";
+        for (DateUri d:this.dates){
+            respuesta+="    dateUri: "+d.getUri()+"\n";
+        }
+        
+        return respuesta;
     }
     
 }

@@ -4,8 +4,14 @@
  */
 package Client;
 
+import SOSCalendar.CalendarResponse;
+import SOSCalendar.CalendarUri;
 import SOSCalendar.Calendars;
+import SOSCalendar.DateResponse;
+import SOSCalendar.DateUri;
 import SOSCalendar.Dates;
+import SOSCalendar.RESTUri;
+import SOSCalendar.UserUri;
 import SOSCalendar.Users;
 import com.sun.jersey.api.client.ClientResponse;
 import java.util.Date;
@@ -59,6 +65,7 @@ public class ClientLauncher {
                     break;
                 case 10:
                     requestCalendar();
+                    break;
                 default:
                     System.out.println();
             }
@@ -211,11 +218,13 @@ public class ClientLauncher {
 
 
         ClientResponse response = calcli.findAll(ClientResponse.class, id.toString());
-        int status = response.getStatus();
+        int status = response.getStatus();        
         if (status == ClientResponse.Status.OK.getStatusCode()) {
-            //Parsear xml??
-            String xml = response.getEntity(String.class);
-            System.out.println(xml);
+           
+            CalendarUri[] calendars = response.getEntity(CalendarUri[].class);
+            for (int i=0; i<calendars.length; i++){
+                 System.out.println(calendars[i].getUri());
+            }
         } else if (status == ClientResponse.Status.NOT_FOUND.getStatusCode()) {
             System.out.println("El propietario o calendario no existe");
         } else if (status == ClientResponse.Status.NO_CONTENT.getStatusCode()) {
@@ -229,14 +238,13 @@ public class ClientLauncher {
     private static void requestUsers() {
         UsersClient cli = new UsersClient();
 
-        ClientResponse respuesta = cli.findAll_XML(ClientResponse.class);
-        String xml = respuesta.getEntity(String.class);
-
-        //TODO: Parsear xml?
-        System.out.print(xml);
-        /*for (Users user : usuarios) {
-         System.out.println(user.toString());
-         }*/
+        ClientResponse respuesta = cli.findAllUsers(ClientResponse.class);
+        UserUri[] usuarios = respuesta.getEntity(UserUri[].class);
+        System.out.println();
+        for (int i=0;i<usuarios.length;i++){
+            System.out.println(usuarios[i].getUri());
+        }
+        
         cli.close();
     }
 
@@ -269,10 +277,12 @@ public class ClientLauncher {
         }
 
         int status = response.getStatus();
+        System.out.println();
         if (status == ClientResponse.Status.OK.getStatusCode()) {
-            //TODO: Parsear XML?
-            String xml = response.getEntity(String.class);
-            System.out.println(xml);
+           
+            DateUri[] uris = response.getEntity(DateUri[].class);
+            for (int i=0; i<uris.length; i++)
+                System.out.println(uris[i].getUri());
 
         } else if (status == ClientResponse.Status.NOT_FOUND.getStatusCode()) {
             System.out.println("El propietario o calendario no existe");
@@ -320,10 +330,11 @@ public class ClientLauncher {
         DatesClient cli = new DatesClient();
         ClientResponse response = cli.find(ClientResponse.class, idUs.toString(), idDate.toString());
         int status = response.getStatus();
-
+        System.out.println();
+        
         if (status == ClientResponse.Status.OK.getStatusCode()) {
-            String date = response.getEntity(String.class);
-            System.out.println(date);
+            DateResponse date = response.getEntity(DateResponse.class);
+            System.out.print(date.toString());
 
         } else if (status == ClientResponse.Status.NOT_FOUND.getStatusCode()) {
             System.out.println("El propietario o cita no existe");
@@ -340,12 +351,12 @@ public class ClientLauncher {
         CalendarsClient cli = new CalendarsClient();
         ClientResponse response = cli.find(ClientResponse.class, idUs.toString(), idCalendar.toString());
         int status = response.getStatus();
+        System.out.println();
 
         if (status == ClientResponse.Status.OK.getStatusCode()) {
 
-            //TODO: Parsear xml?
-            String respuesta = response.getEntity(String.class);
-            System.out.println(respuesta);
+            CalendarResponse respuesta = response.getEntity(CalendarResponse.class);
+            System.out.print(respuesta.toString());
 
         } else if (status == ClientResponse.Status.NOT_FOUND.getStatusCode()) {
             System.out.println("El propietario o calendario no existe");

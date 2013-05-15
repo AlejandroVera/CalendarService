@@ -36,9 +36,9 @@ import javax.ws.rs.core.Response;
 @Stateless
 @Path("calendars")
 public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
+
     @EJB
     private DatesFacadeREST datesFacadeREST;
-
     @PersistenceContext(unitName = "SOSCalendarPU")
     private EntityManager em;
 
@@ -56,10 +56,9 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
         checkUser(id_usu);
 
         //Ahora vamos a buscar conflictos
-        String name = entity.getName();
-
+        
         String querytxt = "SELECT c FROM Calendars c WHERE c.name = :calName";
-	Calendars cal = new Calendars();
+       
         Query query = em.createQuery(querytxt);
         query.setParameter("calName", entity.getName());
         if (!query.getResultList().isEmpty()) {
@@ -67,26 +66,30 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
                     + "There is already a calendar with this name"), 409);
         }
 
-        super.create(entity);
-        
+        super.create(entity);       
+
         return Response.status(Response.Status.NO_CONTENT).header("Location", entity.toUri()).build();
     }
-    
+
     @POST
     @Consumes({"application/xml"})
     @Path("{id_usu}/{id_calen}/dates")
     public Response createDate(Dates entity, @PathParam("id_usu") Integer id_usu, @PathParam("id_calen") Integer id_calen) {
-	System.out.println("USU:"+id_usu+" CAL:"+id_calen);
-	//Primero, comprobamos que el usuario exista
-	checkUser(id_usu);
-	
-	//Comprobamos que el calendario exista
-	checkCalendar(id_calen);
-        System.out.println("Fecha comienzo: "+entity.getFechaComienzo().toString());
-        System.out.println("Fecha final: "+entity.getFechaFinalizado().toString());
-	datesFacadeREST.create(entity);
-	
-	return Response.status(Response.Status.NO_CONTENT).header("Location", entity.toUri()).build();
+        System.out.println("USU:" + id_usu + " CAL:" + id_calen);
+        //Primero, comprobamos que el usuario exista
+        checkUser(id_usu);
+
+        //Comprobamos que el calendario exista
+        Calendars c= checkCalendar(id_calen);
+        
+        //Comprobamos que el calendario es del usuario
+        checkCoherencia(c,id_usu);
+        
+        System.out.println("Fecha comienzo: " + entity.getFechaComienzo().toString());
+        System.out.println("Fecha final: " + entity.getFechaFinalizado().toString());
+        datesFacadeREST.create(entity);
+
+        return Response.status(Response.Status.NO_CONTENT).header("Location", entity.toUri()).build();
     }
 
     @GET
@@ -99,15 +102,19 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
 
         /*Comprobamos que existe y obtenemos el calendario*/
         Calendars calendar = this.checkCalendar(id_calen);
-       
+        
+        //Comprobamos que el calendario es del usuario
+        checkCoherencia(calendar,id_usu);
+
         /*Obtenemos los dates para hacer el composite*/
-        String querytxt = "SELECT d FROM Dates d WHERE d.calendarId = :calId " ;
+        String querytxt = "SELECT d FROM Dates d WHERE d.calendarId = :calId ";
         Query query = em.createQuery(querytxt);
         query.setParameter("calId", calendar);
-        
-        List <Dates> dates = query.getResultList();
-        Dates [] d = new Dates [dates.size()];
-        
+
+        List<Dates> dates = query.getResultList();
+        Dates[] d = new Dates[dates.size()];
+        calendar.setDatesCollection(dates);
+
         return Response.ok(new CalendarResponse(calendar)).build();
     }
 
@@ -121,7 +128,10 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
         checkUser(id_usu);
 
         //Comprobamos y obtenemos el calendario
-        checkCalendar(id_calen);
+        Calendars c =checkCalendar(id_calen);
+        
+        //Comprobamos que el calendario es del usuario
+        checkCoherencia(c,id_usu);
 
         String querytxt = "SELECT c FROM Calendars c WHERE c.name = :calName";
         Query query = em.createQuery(querytxt);
@@ -137,12 +147,15 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
     @DELETE
     @Path("{id_usu}/{id_calen}")
     public void remove(@PathParam("id_usu") Integer id_usu,
-                        @PathParam("id_calen") Integer id) {
+            @PathParam("id_calen") Integer id) {
         //Comprobamos que existe el usuario
         this.checkUser(id_usu);
 
         //Comprobamos que existe el calendario y lo obtenemos
         Calendars calendar = this.checkCalendar(id);
+        
+        //Comprobamos que el calendario es del usuario
+        checkCoherencia(calendar,id_usu);
 
         //Lo borramos
         super.remove(calendar);
@@ -156,7 +169,7 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
         checkUser(id_usu);
 
         String querytxt = "SELECT c FROM Calendars c WHERE c.userId = :userId";
-        
+
         Query query = em.createQuery(querytxt);
         query.setParameter("userId", new Users(id_usu));
         List<Calendars> calendars = query.getResultList();
@@ -164,7 +177,7 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
         if (calendars.isEmpty()) {
             return Response.noContent().build();
         } else {
-            Calendars [] c = new Calendars[calendars.size()];
+            Calendars[] c = new Calendars[calendars.size()];
             return Response.ok(calendarsToUriList((Calendars[]) calendars.toArray(c), id_usu)).build();
         }
 
@@ -172,12 +185,11 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
     }
 
     /*@GET
-    @Path("{from}/{to}")
-    @Produces({"application/xml", "application/json"})
-    public List<Calendars> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
-        return super.findRange(new int[]{from, to});
-    }*/
-
+     @Path("{from}/{to}")
+     @Produces({"application/xml", "application/json"})
+     public List<Calendars> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
+     return super.findRange(new int[]{from, to});
+     }*/
     @GET
     @Path("count")
     @Produces("text/plain")
@@ -208,15 +220,20 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
         return cal;
     }
     
-    
-        private CalendarUri[] calendarsToUriList(Calendars[] calendars, Integer user){
-	    List<CalendarUri> ul = new LinkedList<CalendarUri>();
+    private void checkCoherencia(Calendars c, Integer id_usu){
+            if (c.getUserId().getUserId()!=id_usu){
+            throw new WebApplicationException(new Throwable("Calendario no correspondiente a usuario"), 404);
+        }
+    }
 
-	    for(Calendars c : calendars){
-		ul.add(c.toUri());
-	    }
+    private CalendarUri[] calendarsToUriList(Calendars[] calendars, Integer user) {
+        List<CalendarUri> ul = new LinkedList<CalendarUri>();
 
-	    return (CalendarUri[]) ul.toArray(new CalendarUri[ul.size()]);
+        for (Calendars c : calendars) {
+            ul.add(c.toUri());
+        }
+
+        return (CalendarUri[]) ul.toArray(new CalendarUri[ul.size()]);
 
     }
 }

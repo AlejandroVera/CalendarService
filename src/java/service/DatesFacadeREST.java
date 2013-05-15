@@ -5,6 +5,7 @@
 package service;
 
 import SOSCalendar.Calendars;
+import SOSCalendar.DateResponse;
 import SOSCalendar.Dates;
 import SOSCalendar.DateUri;
 import SOSCalendar.RESTUri;
@@ -144,7 +145,7 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
     @GET
     @Path("dates/{id_usu}/{id_date}")
     @Produces({"application/xml"})
-    public Dates find(@PathParam("id_usu") Integer id_usu, @PathParam("id_date") Integer id_date) {
+    public Response find(@PathParam("id_usu") Integer id_usu, @PathParam("id_date") Integer id_date) {
 	
 	//Primero, comprobamos que el usuario exista
 	checkUser(id_usu);
@@ -153,7 +154,7 @@ public class DatesFacadeREST extends AbstractFacade<Dates> {
 	Dates date = checkDate(id_date);
 	
 	//La borramos
-        return date;
+        return Response.ok(new DateResponse(date)).build();
     }
 
     @GET

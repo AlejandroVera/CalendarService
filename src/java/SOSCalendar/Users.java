@@ -112,8 +112,8 @@ public class Users implements Serializable {
 	return "SOSCalendar.Users[ userId=" + userId + " ]";
     }
     
-    public RESTUri toUri(){
- 	return new RESTUri(BASE_URI+"/users/"+this.userId);
+    public UserUri toUri(){
+ 	return new UserUri(BASE_URI+"/users/"+this.userId);
     }
     
 }

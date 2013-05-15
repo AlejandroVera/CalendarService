@@ -41,16 +41,6 @@ public class UsersClient {
         return resource.accept(javax.ws.rs.core.MediaType.TEXT_PLAIN).get(String.class);
     }
 
-    public <T> T findAll_XML(Class<T> responseType) throws UniformInterfaceException {
-        WebResource resource = webResource;
-        return resource.accept(javax.ws.rs.core.MediaType.APPLICATION_XML).get(responseType);
-    }
-
-    public <T> T findAll_JSON(Class<T> responseType) throws UniformInterfaceException {
-        WebResource resource = webResource;
-        return resource.accept(javax.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
-    }
-
     public void edit_XML(Object requestEntity) throws UniformInterfaceException {
         webResource.type(javax.ws.rs.core.MediaType.APPLICATION_XML).put(requestEntity);
     }
@@ -77,6 +67,11 @@ public class UsersClient {
         WebResource resource = webResource;
         resource = resource.path(java.text.MessageFormat.format("{0}/{1}", new Object[]{from, to}));
         return resource.accept(javax.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
+    }
+
+    public <T> T findAllUsers(Class<T> responseType) throws UniformInterfaceException {
+        WebResource resource = webResource;
+        return resource.accept(javax.ws.rs.core.MediaType.APPLICATION_XML).get(responseType);
     }
 
     public <T> T find_XML(Class<T> responseType, String id) throws UniformInterfaceException {
