@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2013 (http://www.altova.com) by  () -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:complexType name="userUri">
+		<xs:sequence>
+			<xs:element name="uri" type="xs:anyURI"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="dateUri">
+		<xs:sequence>
+			<xs:element name="uri" type="xs:anyURI"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="calendarUri">
+		<xs:sequence>
+			<xs:element name="uri" type="xs:anyURI"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="calendars">
+		<xs:all>
+			<xs:element name="name" type="xs:string"/>
+			<xs:element name="userId">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="userId">
+							<xs:simpleType>
+								<xs:restriction base="xs:int">
+									<xs:minExclusive value="0"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:all>
+	</xs:complexType>
+	<xs:complexType name="calendarResponse">
+		<xs:sequence>
+			<xs:element name="calendarId"/>
+			<xs:element name="dateUri" type="dateUri" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="userUri" type="userUri"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="calendarUris">
+		<xs:sequence>
+			<xs:element name="calendarUri" type="calendarUri" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="dates">
+		<xs:all>
+			<xs:element name="calendarId">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="calendarId">
+							<xs:simpleType>
+								<xs:restriction base="xs:int">
+									<xs:minExclusive value="0"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="description" type="xs:string"/>
+			<xs:element name="fechaComienzo" type="xs:string"/>
+			<xs:element name="fechaFinalizado" type="xs:string"/>
+			<xs:element name="lugar" type="xs:string"/>
+			<xs:element name="name" type="xs:string"/>
+		</xs:all>
+	</xs:complexType>
+	<xs:complexType name="dateResponse">
+		<xs:all>
+			<xs:element name="calendarUri" type="calendarUri"/>
+			<xs:element name="dateId">
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:minExclusive value="0"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="description" type="xs:string"/>
+			<xs:element name="fechaComienzo" type="xs:string"/>
+			<xs:element name="fechaFinalizado" type="xs:string"/>
+			<xs:element name="lugar" type="xs:string"/>
+			<xs:element name="name" type="xs:string"/>
+			<xs:element name="userUri" type="userUri"/>
+		</xs:all>
+	</xs:complexType>
+	<xs:complexType name="dateUris">
+		<xs:sequence>
+			<xs:element name="dateUri" type="dateUri" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="users">
+		<xs:all>
+			<xs:element name="name" type="xs:string"/>
+			<xs:element name="userId">
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:minExclusive value="0"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:all>
+	</xs:complexType>
+	<xs:complexType name="userUris">
+		<xs:sequence>
+			<xs:element name="userUri" type="userUri" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>
