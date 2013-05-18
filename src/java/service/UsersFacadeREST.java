@@ -10,7 +10,9 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -19,6 +21,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 /**
@@ -35,23 +38,19 @@ public class UsersFacadeREST extends AbstractFacade<Users> {
         super(Users.class);
     }
 
-    @POST
-    @Override
+    @POST    
     @Consumes({"application/xml", "application/json"})
-    public void create(Users entity) {
+    public Response createUser(Users entity) {
         super.create(entity);
+        return Response.status(Response.Status.NO_CONTENT).header("Location", entity.toUri()).build();
     }
 
-    @PUT
-    @Override
-    @Consumes({"application/xml", "application/json"})
-    public void edit(Users entity) {
-        super.edit(entity);
-    }
 
     @DELETE
     @Path("{id}")
     public void remove(@PathParam("id") Integer id) {
+        //Se mira si existe el user
+        checkUser(id);
         super.remove(super.find(id));
     }
 
@@ -59,6 +58,8 @@ public class UsersFacadeREST extends AbstractFacade<Users> {
     @Path("{id}")
     @Produces({"application/xml", "application/json"})
     public Users find(@PathParam("id") Integer id) {
+        //Se mira si existe el user
+        checkUser(id);
         return super.find(id);
     }
 
@@ -75,24 +76,19 @@ public class UsersFacadeREST extends AbstractFacade<Users> {
         return Response.ok((UserUri[])listUris.toArray(new UserUri[listUris.size()])).build();
     }
 
-    @GET
-    @Path("{from}/{to}")
-    @Produces({"application/xml", "application/json"})
-    public List<Users> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
-        return super.findRange(new int[]{from, to});
-    }
-
-    @GET
-    @Path("count")
-    @Produces("text/plain")
-    public String countREST() {
-        return String.valueOf(super.count());
-    }
 
     @Override
     protected EntityManager getEntityManager() {
         return em;
     }
     
-    
+    private void checkUser(int id) {
+        try {
+            Query q = getEntityManager().createQuery("SELECT e FROM Users e where e.userId = :user_id");
+            Object u = q.setParameter("user_id", id).getSingleResult();
+        } catch (NoResultException ex) {
+            throw new WebApplicationException(new Throwable("User not found"), 404);
+        }
+
+    }
 }
