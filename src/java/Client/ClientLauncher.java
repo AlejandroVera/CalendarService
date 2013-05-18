@@ -18,6 +18,7 @@ import java.util.Date;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 import javax.ws.rs.core.Response;
@@ -121,7 +122,7 @@ public class ClientLauncher {
         if (resp.getStatus() == ClientResponse.Status.NO_CONTENT.getStatusCode()) {
             System.out.println("El calendario ha sido creado");
             /*String uri = resp.getEntity(String.class);
-             System.out.println("Su uri es: " + uri);*/
+             SystemgetName.out.println("Su uri es: " + uri);*/
         } else if (resp.getStatus() == ClientResponse.Status.NOT_FOUND.getStatusCode()) {
             System.out.println("El propietario no existe");
         } else {
@@ -162,11 +163,30 @@ public class ClientLauncher {
         Integer idUs = readInt("ID del usuario: ");
         Integer idCita = readInt("ID de la cita: ");
         Dates date;
+        DateResponse fechaResponse;
         DatesClient dcli = new DatesClient();
+        CalendarsClient calendarClient = new CalendarsClient();
+        UsersClient userClient = new UsersClient();
         ClientResponse antes = dcli.find(ClientResponse.class, "" + idUs, "" + idCita);
 
         if (antes.getStatus() == Response.Status.OK.getStatusCode()) {
-            date = antes.getEntity(Dates.class);
+            fechaResponse = antes.getEntity(DateResponse.class);
+            date = new Dates(fechaResponse.getDateId(), fechaResponse.getName(), fechaResponse.getDescription(),
+                                fechaResponse.getLugar(), fechaResponse.getFechaComienzo(), fechaResponse.getFechaFinalizado());
+            
+            //Obtenemos el usuario para ponérselo al calendario
+            ClientResponse userResponse = userClient.find_XML(ClientResponse.class, idUs.toString());
+            
+            String calendarId = fechaResponse.getCalendarUri().getUri().replaceFirst(".*/([^/?]+).*", "$1");
+            
+            //Obtenemos el calendario para ponérselo a la date1
+            CalendarResponse calendario = calendarClient.find(CalendarResponse.class, idUs.toString(), calendarId);
+            Calendars calendar = new Calendars();
+            calendar.setCalendarId(calendario.getCalendarId());
+            calendar.setName(calendario.getName());
+            calendar.setUserId(userResponse.getEntity(Users.class));
+            
+            date.setCalendarId(calendar);
             System.out.println("Indique los valores a modificar. Si no quiere modificar alguno, pulse Enter para mantener el valor previo.");
 
 
@@ -205,25 +225,30 @@ public class ClientLauncher {
 
         dcli.edit(date, idUs.toString(), idCita.toString());
         dcli.close();
+        calendarClient.close();
+        userClient.close();
     }
 
     private static void requestUserCalendars() {
-        System.out.print("ID del usuario:");
-        in.hasNextInt();
-        Integer id = in.nextInt();
-        in.nextLine();
-        System.out.println();
+        Integer idUs = readInt("ID del usuario: ");
 
         CalendarsClient calcli = new CalendarsClient();
 
 
-        ClientResponse response = calcli.findAll(ClientResponse.class, id.toString());
+        ClientResponse response = calcli.findAll(ClientResponse.class, idUs.toString());
         int status = response.getStatus();        
-        if (status == ClientResponse.Status.OK.getStatusCode()) {
-           
+        if (status == ClientResponse.Status.OK.getStatusCode()) {           
+                      
             CalendarUri[] calendars = response.getEntity(CalendarUri[].class);
+            System.out.println("Lista de calendarios:");
             for (int i=0; i<calendars.length; i++){
-                 System.out.println(calendars[i].getUri());
+                String calendarId = calendars[i].getUri().replaceFirst(".*/([^/?]+).*", "$1");
+                ClientResponse response2 = calcli.find(ClientResponse.class, idUs.toString(), calendarId);
+                CalendarResponse respuestaCalendar = response2.getEntity(CalendarResponse.class);
+                System.out.println();
+                System.out.println("    Id del calendario: "+calendarId);
+                System.out.println("    Nombre del calendario: "+ respuestaCalendar.getName());
+                System.out.println("    Uri del calendario: "+calendars[i].getUri());
             }
         } else if (status == ClientResponse.Status.NOT_FOUND.getStatusCode()) {
             System.out.println("El propietario o calendario no existe");
@@ -241,8 +266,14 @@ public class ClientLauncher {
         ClientResponse respuesta = cli.findAllUsers(ClientResponse.class);
         UserUri[] usuarios = respuesta.getEntity(UserUri[].class);
         System.out.println();
+        System.out.println("Lista de usuarios:");
         for (int i=0;i<usuarios.length;i++){
-            System.out.println(usuarios[i].getUri());
+            System.out.println();
+            String userId = usuarios[i].getUri().replaceFirst(".*/([^/?]+).*", "$1");
+            Users user =cli.find_XML(Users.class, userId);
+            System.out.println("    Id de usuario: "+user.getUserId());
+            System.out.println("    Nombre de usuario: "+user.getName());
+            System.out.println("    Uri: "+usuarios[i].getUri());            
         }
         
         cli.close();
@@ -281,8 +312,17 @@ public class ClientLauncher {
         if (status == ClientResponse.Status.OK.getStatusCode()) {
            
             DateUri[] uris = response.getEntity(DateUri[].class);
-            for (int i=0; i<uris.length; i++)
-                System.out.println(uris[i].getUri());
+            System.out.println("Lista de citas:");
+            for (int i=0; i<uris.length; i++){
+                String dateId = uris[i].getUri().replaceFirst(".*/([^/?]+).*", "$1");
+                ClientResponse response2 = cli.find(ClientResponse.class, idUs.toString(), dateId);
+                DateResponse respuestaDate = response2.getEntity(DateResponse.class);
+                System.out.println();
+                System.out.println("    Id de la cita: "+dateId);
+                System.out.println("    Nombre de la cita: "+ respuestaDate.getName());
+                System.out.println("    Uri de la cita: "+uris[i].getUri());
+                
+            }
 
         } else if (status == ClientResponse.Status.NOT_FOUND.getStatusCode()) {
             System.out.println("El propietario o calendario no existe");
@@ -302,23 +342,36 @@ public class ClientLauncher {
 
         Integer idUs = readInt("ID del usuario: ");
         Integer idCal = readInt("ID del calendario: ");
-        Calendars calendar;
+        CalendarResponse calendar;
+        UsersClient userClient = new UsersClient();
+        DatesClient dateClient = new DatesClient();
 
         ClientResponse antes = cli.find(ClientResponse.class, idUs.toString(), idCal.toString());
         if (antes.getStatus() == Response.Status.OK.getStatusCode()) {
-            calendar = antes.getEntity(Calendars.class);
+            calendar = antes.getEntity(CalendarResponse.class);
+            
+            Calendars calendario = new Calendars();
+            calendario.setCalendarId(calendar.getCalendarId());
+            
+            //Le ponemos el usuario obtenido del id del usuario
+            Users usuario = userClient.find_XML(Users.class, idUs.toString());
+                    
+            calendario.setUserId(usuario);
+                               
             System.out.println("Indique los valores a modificar. Si no quiere modificar alguno, pulse Enter para mantener el valor previo.");
             String param = readLine("Nombre del calendario: ");
             if (!param.equals("")) {
-                calendar.setName(param);
-            }           
+                calendario.setName(param);
+            }else
+                calendario.setName(calendar.getName());
 
-            cli.edit(calendar, idUs.toString(), idCal.toString());
+            cli.edit(calendario, idUs.toString(), idCal.toString());
         } else {
             System.out.println("El propietario o cita no existe");           
         }
 
-
+        dateClient.close();
+        userClient.close();
         cli.close();
 
     }
@@ -417,4 +470,5 @@ public class ClientLauncher {
         System.out.println(date.toString());
         return date;
     }
+
 }

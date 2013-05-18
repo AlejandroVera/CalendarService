@@ -78,7 +78,7 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
         System.out.println("USU:" + id_usu + " CAL:" + id_calen);
         //Primero, comprobamos que el usuario exista
         checkUser(id_usu);
-
+        
         //Comprobamos que el calendario exista
         Calendars c= checkCalendar(id_calen);
         
@@ -111,8 +111,7 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
         Query query = em.createQuery(querytxt);
         query.setParameter("calId", calendar);
 
-        List<Dates> dates = query.getResultList();
-        Dates[] d = new Dates[dates.size()];
+        List<Dates> dates = query.getResultList();        
         calendar.setDatesCollection(dates);
 
         return Response.ok(new CalendarResponse(calendar)).build();
@@ -132,10 +131,15 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
         
         //Comprobamos que el calendario es del usuario
         checkCoherencia(c,id_usu);
-
+        System.out.println();
+        System.out.println(entity.getName());
+        System.out.println(entity.getCalendarId());
+        System.out.println(entity.getUserId().toString());
+        
+        
         String querytxt = "SELECT c FROM Calendars c WHERE c.name = :calName";
         Query query = em.createQuery(querytxt);
-        query.setParameter("calName", entity);
+        query.setParameter("calName", entity.getName());
         if (!query.getResultList().isEmpty()) {
             throw new WebApplicationException(new Throwable("Conflict: "
                     + "There is already a calendar with this name"), 409);
@@ -221,8 +225,10 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
     }
     
     private void checkCoherencia(Calendars c, Integer id_usu){
-            if (c.getUserId().getUserId()!=id_usu){
-            throw new WebApplicationException(new Throwable("Calendario no correspondiente a usuario"), 404);
+            if (!c.getUserId().getUserId().equals(id_usu)){
+                System.out.println("ID usuario: "+ c.getUserId().getUserId());
+                System.out.println("ID usuario calendario: "+ c.getUserId().getUserId());
+                throw new WebApplicationException(new Throwable("Calendario no correspondiente a usuario"), 404);
         }
     }
 
