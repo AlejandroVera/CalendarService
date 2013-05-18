@@ -41,8 +41,16 @@ public class UsersFacadeREST extends AbstractFacade<Users> {
     @POST    
     @Consumes({"application/xml", "application/json"})
     public Response createUser(Users entity) {
+        
         super.create(entity);
-        return Response.status(Response.Status.NO_CONTENT).header("Location", entity.toUri()).build();
+        //Necesario para obtener el id           
+        String querytxt = "SELECT u FROM Users u WHERE u.name = :userName";
+       
+        Query query = em.createQuery(querytxt);
+        query.setParameter("userName", entity.getName());
+        entity = (Users) query.getSingleResult();
+
+        return Response.status(Response.Status.NO_CONTENT).header("Location", entity.toUri().getUri()).build();        
     }
 
 

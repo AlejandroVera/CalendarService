@@ -105,7 +105,14 @@ public class ClientLauncher {
         Users us = new Users();
         us.setName(name);
         UsersClient cli = new UsersClient();
-        cli.createUser_XML(us);
+        ClientResponse resp = cli.createUser_XML(us);
+        System.out.println(); 
+       if (resp.getStatus() == ClientResponse.Status.NO_CONTENT.getStatusCode()) {           
+           System.out.println("Usuario creado con uri: "+resp.getHeaders().getFirst("Location"));
+            
+        } else {
+            System.out.println("Error al crear el usuario");
+        }
         cli.close();
     }
 
@@ -116,15 +123,16 @@ public class ClientLauncher {
         Calendars cal = new Calendars();
         cal.setUserId(new Users(id));
         cal.setName(name);
+        
         CalendarsClient cli = new CalendarsClient();
         ClientResponse resp = cli.create(cal, "" + id);
 
         if (resp.getStatus() == ClientResponse.Status.NO_CONTENT.getStatusCode()) {
-            System.out.println("El calendario ha sido creado");
-            /*String uri = resp.getEntity(String.class);
-             SystemgetName.out.println("Su uri es: " + uri);*/
+            System.out.println("Calendario ha sido creado con uri: "+resp.getHeaders().getFirst("Location"));
+            
         } else if (resp.getStatus() == ClientResponse.Status.NOT_FOUND.getStatusCode()) {
             System.out.println("El propietario no existe");
+            
         } else {
             System.out.println("Error desconocido");
         }
@@ -135,20 +143,24 @@ public class ClientLauncher {
 
         int idUs = readInt("ID del usuario: ");
         int idCal = readInt("ID del calendario: ");
+        
 
         Dates date = new Dates();
-        date.setCalendarId(new Calendars(idCal));
+        Calendars cal= new Calendars(idCal);
+        cal.setUserId(new Users(idUs));
+        date.setCalendarId(cal);
         date.setName(readLine("Nombre de la cita: "));
         date.setDescription(readLine("Descripción: "));
         date.setFechaComienzo(readDate("Fecha comienzo (yyyy-MM-dd HH:mm): "));
         date.setFechaFinalizado(readDate("Fecha finalización (yyyy-MM-dd HH:mm): "));
         date.setLugar(readLine("Lugar: "));
-
+        
         CalendarsClient cli = new CalendarsClient();
+        
         ClientResponse resp = cli.createDate(date, "" + idUs, "" + idCal);
-
+        
         if (resp.getStatus() == ClientResponse.Status.NO_CONTENT.getStatusCode()) {
-            System.out.println("La cita ha sido creada");
+            System.out.println("La cita ha sido creada con uri: "+resp.getHeaders().getFirst("Location"));
 
         } else if (resp.getStatus() == ClientResponse.Status.NOT_FOUND.getStatusCode()) {
             System.out.println("El propietario o calendario no existe");

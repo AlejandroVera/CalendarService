@@ -66,9 +66,16 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
                     + "There is already a calendar with this name"), 409);
         }
 
-        super.create(entity);       
+        super.create(entity);
+        
+        //Necesario para obtener el id           
+        querytxt = "SELECT c FROM Calendars c WHERE c.name = :calName";
+       
+        query = em.createQuery(querytxt);
+        query.setParameter("calName", entity.getName());
+        entity = (Calendars) query.getSingleResult();
 
-        return Response.status(Response.Status.NO_CONTENT).header("Location", entity.toUri()).build();
+        return Response.status(Response.Status.NO_CONTENT).header("Location", entity.toUri().getUri()).build();
     }
 
     @POST
@@ -88,8 +95,15 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
         System.out.println("Fecha comienzo: " + entity.getFechaComienzo().toString());
         System.out.println("Fecha final: " + entity.getFechaFinalizado().toString());
         datesFacadeREST.create(entity);
+        
+        //Necesario para obtener el id
+        String querytxt = "SELECT d FROM Dates d WHERE d.name = :dateName";
+        Query query = em.createQuery(querytxt);
+        query.setParameter("dateName", entity.getName());
+        Dates newentity = (Dates) query.getSingleResult();
+        entity.setDateId(newentity.getDateId());
 
-        return Response.status(Response.Status.NO_CONTENT).header("Location", entity.toUri()).build();
+        return Response.status(Response.Status.NO_CONTENT).header("Location", entity.toUri().getUri()).build();
     }
 
     @GET
