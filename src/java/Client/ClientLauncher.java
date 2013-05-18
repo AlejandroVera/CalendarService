@@ -105,7 +105,7 @@ public class ClientLauncher {
         Users us = new Users();
         us.setName(name);
         UsersClient cli = new UsersClient();
-        cli.create_XML(us);
+        cli.createUser_XML(us);
         cli.close();
     }
 
