@@ -82,7 +82,7 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
     @Consumes({"application/xml"})
     @Path("{id_usu}/{id_calen}/dates")
     public Response createDate(Dates entity, @PathParam("id_usu") Integer id_usu, @PathParam("id_calen") Integer id_calen) {
-        System.out.println("USU:" + id_usu + " CAL:" + id_calen);
+
         //Primero, comprobamos que el usuario exista
         checkUser(id_usu);
         
@@ -92,8 +92,6 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
         //Comprobamos que el calendario es del usuario
         checkCoherencia(c,id_usu);
         
-        System.out.println("Fecha comienzo: " + entity.getFechaComienzo().toString());
-        System.out.println("Fecha final: " + entity.getFechaFinalizado().toString());
         datesFacadeREST.create(entity);
         
         //Necesario para obtener el id

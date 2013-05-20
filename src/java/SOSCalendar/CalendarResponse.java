@@ -42,8 +42,8 @@ public class CalendarResponse implements Serializable {
     @Column(name = "name")
     private String name;
     @ManyToOne(optional = false)
-    private UserUri user;
-    private DateUri[] dates;
+    private UserUri userUri;
+    private DateUri[] dateUri;
 
     public CalendarResponse() {
     }
@@ -59,9 +59,9 @@ public class CalendarResponse implements Serializable {
 	for(Dates d : dates){
 	    datesUris.add(d.toUri());
 	}
-	this.setDates(datesUris.toArray(new DateUri[0]));
+	this.setDateUri(datesUris.toArray(new DateUri[0]));
 	
-	this.setUser(calendar.getUserId().toUri());
+	this.setUserUri(calendar.getUserId().toUri());
 	
     }
 
@@ -82,20 +82,20 @@ public class CalendarResponse implements Serializable {
 	this.name = name;
     }
 
-    public DateUri[] getDates() {
-	return dates;
+    public DateUri[] getDateUri() {
+	return dateUri;
     }
 
-    public void setDates(DateUri[] dates) {
-	this.dates = dates;
+    public void setDateUri(DateUri[] dateUri) {
+	this.dateUri = dateUri;
     }
 
-    public UserUri getUser() {
-	return user;
+    public UserUri getUserUri() {
+	return userUri;
     }
 
-    public void setUser(UserUri user) {
-	this.user = user;
+    public void setUserUri(UserUri userUri) {
+	this.userUri = userUri;
     }
 
     @Override
@@ -121,10 +121,10 @@ public class CalendarResponse implements Serializable {
     @Override
     public String toString() {
 	String respuesta = "ID del calendario: " + calendarId + "\n";
-        respuesta+="userUri: "+this.getUser().getUri() +"\n" ;
+        respuesta+="userUri: "+this.getUserUri().getUri() +"\n" ;
         respuesta+="Nombre: "+this.getName() +"\n" ;
         respuesta+="Citas:\n";
-        for (DateUri d:this.dates){
+        for (DateUri d:this.dateUri){
             respuesta+="    dateUri: "+d.getUri()+"\n";
         }
         
