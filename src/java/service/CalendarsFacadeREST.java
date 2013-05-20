@@ -6,7 +6,6 @@ package service;
 
 import SOSCalendar.Calendars;
 import SOSCalendar.Dates;
-import SOSCalendar.RESTUri;
 import SOSCalendar.Users;
 import SOSCalendar.CalendarResponse;
 import SOSCalendar.CalendarUri;
@@ -142,12 +141,7 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
         Calendars c =checkCalendar(id_calen);
         
         //Comprobamos que el calendario es del usuario
-        checkCoherencia(c,id_usu);
-        System.out.println();
-        System.out.println(entity.getName());
-        System.out.println(entity.getCalendarId());
-        System.out.println(entity.getUserId().toString());
-        
+        checkCoherencia(c,id_usu);        
         
         String querytxt = "SELECT c FROM Calendars c WHERE c.name = :calName";
         Query query = em.createQuery(querytxt);
@@ -238,8 +232,6 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
     
     private void checkCoherencia(Calendars c, Integer id_usu){
             if (!c.getUserId().getUserId().equals(id_usu)){
-                System.out.println("ID usuario: "+ c.getUserId().getUserId());
-                System.out.println("ID usuario calendario: "+ c.getUserId().getUserId());
                 throw new WebApplicationException(new Throwable("Calendario no correspondiente a usuario"), 404);
         }
     }
