@@ -43,11 +43,11 @@ public class UsersFacadeREST extends AbstractFacade<Users> {
         
         super.create(entity);
         //Necesario para obtener el id           
-        String querytxt = "SELECT u FROM Users u WHERE u.name = :userName";
+        String querytxt = "SELECT u FROM Users u";
        
-        Query query = em.createQuery(querytxt);
-        query.setParameter("userName", entity.getName());
-        entity = (Users) query.getSingleResult();
+        Query query = em.createQuery(querytxt);       
+        
+        entity = (Users) query.getResultList().get(query.getResultList().size()-1);
 
         return Response.status(Response.Status.NO_CONTENT).header("Location", entity.toUri().getUri()).build();        
     }

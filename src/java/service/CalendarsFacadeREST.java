@@ -56,23 +56,24 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
 
         //Ahora vamos a buscar conflictos
         
-        String querytxt = "SELECT c FROM Calendars c WHERE c.name = :calName";
+        String querytxt = "SELECT c FROM Calendars c WHERE c.name = :calName AND c.userId= :userId";
        
         Query query = em.createQuery(querytxt);
         query.setParameter("calName", entity.getName());
+        query.setParameter("userId", entity.getUserId());
         if (!query.getResultList().isEmpty()) {
-            throw new WebApplicationException(new Throwable("Conflict: "
-                    + "There is already a calendar with this name"), 409);
+            Calendars calendarioError = (Calendars)query.getSingleResult();
+            return Response.status(Response.Status.CONFLICT).header("Location", calendarioError.toUri().getUri()).build();            
         }
 
         super.create(entity);
         
         //Necesario para obtener el id           
-        querytxt = "SELECT c FROM Calendars c WHERE c.name = :calName";
-       
+        querytxt = "SELECT c FROM Calendars c";
+              
         query = em.createQuery(querytxt);
-        query.setParameter("calName", entity.getName());
-        entity = (Calendars) query.getSingleResult();
+                
+        entity = (Calendars) query.getResultList().get(query.getResultList().size()-1);
 
         return Response.status(Response.Status.NO_CONTENT).header("Location", entity.toUri().getUri()).build();
     }
@@ -94,12 +95,11 @@ public class CalendarsFacadeREST extends AbstractFacade<Calendars> {
         datesFacadeREST.create(entity);
         
         //Necesario para obtener el id
-        String querytxt = "SELECT d FROM Dates d WHERE d.name = :dateName";
+        String querytxt = "SELECT d FROM Dates d";
         Query query = em.createQuery(querytxt);
-        query.setParameter("dateName", entity.getName());
-        Dates newentity = (Dates) query.getSingleResult();
-        entity.setDateId(newentity.getDateId());
-
+                
+        entity = (Dates) query.getResultList().get(query.getResultList().size()-1);
+        
         return Response.status(Response.Status.NO_CONTENT).header("Location", entity.toUri().getUri()).build();
     }
 
