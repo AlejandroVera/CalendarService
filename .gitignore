@@ -1,0 +1,10 @@
+
+# /
+/build
+/dist
+
+# /Memoria/
+/Memoria/.~lock.MemoriaREST.odt#
+
+# /nbproject/
+/nbproject/private
